@@ -39,7 +39,7 @@
 
 运行效果示例：
 
-![demo](assets/demo.gif)
+![demo](../../assets/demo.gif)
 
 将运行录屏转换为 GIF 并放入 `assets/` 目录，然后在 README 中引用。
 
