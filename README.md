@@ -1,50 +1,63 @@
-\# CG-Lab 万有引力粒子群仿真项目
+# CG-Lab 计算机图形学实验仓库
 
-\## 一、项目架构
+本仓库用于存放计算机图形学课程实验代码与说明文档，基于 Python 与 Taichi 实现。
 
-本项目采用标准src布局，目录结构如下：
+目前包含以下实验内容：
 
+- **Work0**：万有引力粒子群仿真实验
+- **Work1**：3D MVP 变换实验（Model-View-Projection）
+
+
+## 仓库结构
+
+```text
 CG-Lab/
+├── assets/
+├── src/
+│   ├── Work0/
+│   │   ├── __init__.py
+│   │   ├── config.py
+│   │   ├── physics.py
+│   │   ├── main.py
+│   │   └── README.md
+│   └── Work1/
+│       ├── __init__.py
+│       ├── main.py
+│       ├── test.py
+│       └── README.md
+├── .gitignore
+├── .python-version
+├── pyproject.toml
+├── uv.lock
+└── README.md
+```
+## 环境说明
 
-├── src/ # 源代码目录
+本项目推荐使用 uv 或 conda 配置 Python 环境。
 
-│ └── Work0/ # 第 0 次实验模块
+### 使用 uv
 
-│ ├── init.py # 包标识文件
+在项目根目录执行：
+```bash
+uv add taichi
+uv run python src/Work0/main.py
+uv run python src/Work1/main.py
+```
+### 使用 conda
 
-│ ├── config.py # 配置文件（粒子数量、引力参数等）
+在项目根目录执行：
+```bash
+conda create -n cg_env python=3.12 -y
+conda activate cg_env
+pip install taichi
+python src/Work0/main.py
+python src/Work1/main.py
+```
+## 各实验说明
+### Work0：万有引力粒子群仿真
+实现二维空间中的粒子引力相互作用与可视化。
+详细说明请见：```src/Work0/README.md```
 
-│ ├── physics.py # 物理逻辑（万有引力计算、GPU 并行）
-
-│ └── main.py # 主程序（渲染、交互、入口）
-
-├── .gitignore # Git 忽略规则
-
-└── README.md # 项目说明文档
-
-plaintext
-
-\## 二、代码逻辑
-
-1\. `config.py`：定义粒子数量、引力常数、窗口大小等配置参数；
-
-2\. `physics.py`：基于Taichi框架实现万有引力公式，利用GPU并行计算粒子受力和运动；
-
-3\. `main.py`：初始化Taichi、创建渲染窗口、循环更新粒子状态，支持交互操作。
-
-
-
-\## 三、实现功能
-
-\- 基于GPU并行计算的万有引力粒子群仿真；
-
-\- 可视化粒子运动效果，支持鼠标/键盘交互；
-
-\- 模块化设计，代码分层清晰，便于扩展。
-
-
-
-\## 四、效果展示
-
-（此处粘贴项目运行的演示视频/截图链接）
-
+### Work1：3D MVP 变换实验
+实现三维空间中三角形的模型变换、视图变换与投影变换，并将其映射到二维屏幕空间进行绘制。
+详细说明请见：```src/Work1/README.md```
