@@ -1,104 +1,250 @@
 import taichi as ti
-import numpy as np
+import math
 
-# 使用 gpu 后端
-ti.init(arch=ti.gpu)
+# 1. 基本配置
 
-WIDTH = 800
-HEIGHT = 800
-MAX_CONTROL_POINTS = 100
-NUM_SEGMENTS = 1000 # 曲线采样点数量
+ti.init(arch=ti.cpu)
 
-# 像素缓冲区
-pixels = ti.Vector.field(3, dtype=ti.f32, shape=(WIDTH, HEIGHT))
+# 将窗口宽高抽取出来，避免投影矩阵里的 aspect_ratio 写死
+WIDTH, HEIGHT = 700, 700
+ASPECT_RATIO = WIDTH / HEIGHT
 
-# GUI 绘制数据缓冲池
-gui_points = ti.Vector.field(2, dtype=ti.f32, shape=MAX_CONTROL_POINTS)
-gui_indices = ti.field(dtype=ti.i32, shape=MAX_CONTROL_POINTS * 2)
+# 三角形顶点（3个三维点）
+vertices = ti.Vector.field(3, dtype=ti.f32, shape=3)
 
-# --- 【性能优化核心 1】：新增一个用于存放曲线坐标的 GPU 缓冲区 ---
-curve_points_field = ti.Vector.field(2, dtype=ti.f32, shape=NUM_SEGMENTS + 1)
+# 投影到屏幕后的二维坐标
+screen_coords = ti.Vector.field(2, dtype=ti.f32, shape=3)
 
-def de_casteljau(points, t):
-    """纯 Python 递归实现 De Casteljau 算法"""
-    if len(points) == 1:
-        return points[0]
-    next_points = []
-    for i in range(len(points) - 1):
-        p0 = points[i]
-        p1 = points[i+1]
-        x = (1.0 - t) * p0[0] + t * p1[0]
-        y = (1.0 - t) * p0[1] + t * p1[1]
-        next_points.append([x, y])
-    return de_casteljau(next_points, t)
 
+# 2. 模型矩阵：分别实现绕 X/Y/Z 轴旋转
+@ti.func
+def get_rotation_x(angle: ti.f32):
+    rad = angle * math.pi / 180.0
+    c = ti.cos(rad)
+    s = ti.sin(rad)
+    return ti.Matrix([
+        [1.0, 0.0, 0.0, 0.0],
+        [0.0,  c, -s, 0.0],
+        [0.0,  s,  c, 0.0],
+        [0.0, 0.0, 0.0, 1.0]
+    ])
+
+
+@ti.func
+def get_rotation_y(angle: ti.f32):
+    rad = angle * math.pi / 180.0
+    c = ti.cos(rad)
+    s = ti.sin(rad)
+    return ti.Matrix([
+        [ c, 0.0,  s, 0.0],
+        [0.0, 1.0, 0.0, 0.0],
+        [-s, 0.0,  c, 0.0],
+        [0.0, 0.0, 0.0, 1.0]
+    ])
+
+
+@ti.func
+def get_rotation_z(angle: ti.f32):
+    rad = angle * math.pi / 180.0
+    c = ti.cos(rad)
+    s = ti.sin(rad)
+    return ti.Matrix([
+        [c, -s, 0.0, 0.0],
+        [s,  c, 0.0, 0.0],
+        [0.0, 0.0, 1.0, 0.0],
+        [0.0, 0.0, 0.0, 1.0]
+    ])
+
+
+@ti.func
+def get_model_matrix(angle: ti.f32, axis: ti.i32):
+    """
+    模型变换矩阵
+    axis = 0 -> 绕 X 轴旋转
+    axis = 1 -> 绕 Y 轴旋转
+    axis = 2 -> 绕 Z 轴旋转（基础要求）
+    """
+    # 关键修复：
+    # Taichi 不支持在动态 if 中直接 return
+    # 所以这里使用“先赋值，后统一 return”的写法
+    model = ti.Matrix.identity(ti.f32, 4)
+
+    # 在基础要求“绕 Z 轴旋转”之外，扩展为支持三轴切换
+    if axis == 0:
+        model = get_rotation_x(angle)
+    elif axis == 1:
+        model = get_rotation_y(angle)
+    else:
+        model = get_rotation_z(angle)
+
+    return model
+
+
+# 3. 视图矩阵
+@ti.func
+def get_view_matrix(eye_pos):
+    """
+    视图变换矩阵：将相机平移到原点
+    """
+    return ti.Matrix([
+        [1.0, 0.0, 0.0, -eye_pos[0]],
+        [0.0, 1.0, 0.0, -eye_pos[1]],
+        [0.0, 0.0, 1.0, -eye_pos[2]],
+        [0.0, 0.0, 0.0, 1.0]
+    ])
+
+
+# 4. 投影矩阵
+@ti.func
+def get_projection_matrix(eye_fov: ti.f32, aspect_ratio: ti.f32, zNear: ti.f32, zFar: ti.f32):
+    """
+    透视投影矩阵
+    过程：
+    1. 透视平截头体 -> 正交长方体
+    2. 正交长方体 -> 标准立方体 [-1, 1]^3
+    """
+    # 在右手坐标系中，相机看向 -Z 方向
+    # 因此 near / far 在实际坐标里取负值
+    n = -zNear
+    f = -zFar
+
+    # 由视场角和宽高比计算视锥体边界
+    fov_rad = eye_fov * math.pi / 180.0
+    t = ti.tan(fov_rad / 2.0) * ti.abs(n)
+    b = -t
+    r = aspect_ratio * t
+    l = -r
+
+    # 第一步：透视到正交
+    M_p2o = ti.Matrix([
+        [n,   0.0,   0.0,    0.0],
+        [0.0, n,     0.0,    0.0],
+        [0.0, 0.0, n + f, -n * f],
+        [0.0, 0.0,   1.0,    0.0]
+    ])
+
+    # 第二步：正交投影（缩放）
+    M_ortho_scale = ti.Matrix([
+        [2.0 / (r - l), 0.0, 0.0, 0.0],
+        [0.0, 2.0 / (t - b), 0.0, 0.0],
+        [0.0, 0.0, 2.0 / (n - f), 0.0],
+        [0.0, 0.0, 0.0, 1.0]
+    ])
+
+    # 第二步：正交投影（平移）
+    M_ortho_trans = ti.Matrix([
+        [1.0, 0.0, 0.0, -(r + l) / 2.0],
+        [0.0, 1.0, 0.0, -(t + b) / 2.0],
+        [0.0, 0.0, 1.0, -(n + f) / 2.0],
+        [0.0, 0.0, 0.0, 1.0]
+    ])
+
+    M_ortho = M_ortho_scale @ M_ortho_trans
+    return M_ortho @ M_p2o
+
+
+# 5. MVP 变换
 @ti.kernel
-def clear_pixels():
-    """并行清空像素缓冲区"""
-    for i, j in pixels:
-        pixels[i, j] = ti.Vector([0.0, 0.0, 0.0])
+def compute_transform(angle: ti.f32, axis: ti.i32):
+    """
+    对三角形三个顶点做 MVP 变换，并映射到屏幕坐标
+    """
+    eye_pos = ti.Vector([0.0, 0.0, 5.0])
 
-# --- 【性能优化核心 2】：将“点亮像素”的工作交给 GPU 并行执行 ---
-@ti.kernel
-def draw_curve_kernel(n: ti.i32):
-    # 这个 for 循环在 kernel 中，Taichi 会自动将其在 GPU 上极速执行
-    for i in range(n):
-        pt = curve_points_field[i]
-        x_pixel = ti.cast(pt[0] * WIDTH, ti.i32)
-        y_pixel = ti.cast(pt[1] * HEIGHT, ti.i32)
-        if 0 <= x_pixel < WIDTH and 0 <= y_pixel < HEIGHT:
-            pixels[x_pixel, y_pixel] = ti.Vector([0.0, 1.0, 0.0])
+    model = get_model_matrix(angle, axis)
+    view = get_view_matrix(eye_pos)
 
+    # 不再把 aspect_ratio 写死为 1.0，而是根据窗口大小动态确定
+    proj = get_projection_matrix(45.0, ASPECT_RATIO, 0.1, 50.0)
+
+    # 按列向量右乘原则：MVP = P @ V @ M
+    mvp = proj @ view @ model
+
+    for i in range(3):
+        v = vertices[i]
+
+        # 补成齐次坐标
+        v4 = ti.Vector([v[0], v[1], v[2], 1.0])
+
+        # 裁剪空间坐标
+        v_clip = mvp @ v4
+
+        # 透视除法：得到标准设备坐标 NDC
+        v_ndc = v_clip / v_clip[3]
+
+        # 视口变换：[-1, 1] -> [0, 1]
+        screen_coords[i][0] = (v_ndc[0] + 1.0) / 2.0
+        screen_coords[i][1] = (v_ndc[1] + 1.0) / 2.0
+
+
+def axis_name(axis):
+    if axis == 0:
+        return "X"
+    elif axis == 1:
+        return "Y"
+    else:
+        return "Z"
+
+
+# 6. 主程序
 def main():
-    window = ti.ui.Window("Bezier Curve (60 FPS Restored)", (WIDTH, HEIGHT))
-    canvas = window.get_canvas()
-    control_points = []
-    
-    while window.running:
-        for e in window.get_events(ti.ui.PRESS):
-            if e.key == ti.ui.LMB: 
-                if len(control_points) < MAX_CONTROL_POINTS:
-                    pos = window.get_cursor_pos()
-                    control_points.append(pos)
-                    print(f"Added control point: {pos}")
-            elif e.key == 'c': 
-                control_points = []
-                print("Canvas cleared.")
-        
-        clear_pixels()
-        
-        current_count = len(control_points)
-        if current_count >= 2:
-            # 1. 在 CPU 端 (Python) 把所有点的坐标算好，存进 numpy 数组
-            curve_points_np = np.zeros((NUM_SEGMENTS + 1, 2), dtype=np.float32)
-            for t_int in range(NUM_SEGMENTS + 1):
-                t = t_int / NUM_SEGMENTS
-                curve_points_np[t_int] = de_casteljau(control_points, t)
-            
-            # 2. 一次性打包发送给 GPU (只发生 1 次内存通信，而不是 1000 次)
-            curve_points_field.from_numpy(curve_points_np)
-            
-            # 3. 呼叫 GPU：数据已经提供，去显存里将对应像素涂绿
-            draw_curve_kernel(NUM_SEGMENTS + 1)
-                    
-        canvas.set_image(pixels)
-        
-        if current_count > 0:
-            np_points = np.full((MAX_CONTROL_POINTS, 2), -10.0, dtype=np.float32)
-            np_points[:current_count] = np.array(control_points, dtype=np.float32)
-            gui_points.from_numpy(np_points)
-            canvas.circles(gui_points, radius=0.006, color=(1.0, 0.0, 0.0))
-            
-            if current_count >= 2:
-                np_indices = np.zeros(MAX_CONTROL_POINTS * 2, dtype=np.int32)
-                indices = []
-                for i in range(current_count - 1):
-                    indices.extend([i, i + 1])
-                np_indices[:len(indices)] = np.array(indices, dtype=np.int32)
-                gui_indices.from_numpy(np_indices)
-                canvas.lines(gui_points, width=0.002, indices=gui_indices, color=(0.5, 0.5, 0.5))
-        
-        window.show()
+    # 初始化三角形顶点
+    vertices[0] = [2.0, 0.0, -2.0]
+    vertices[1] = [0.0, 2.0, -2.0]
+    vertices[2] = [-2.0, 0.0, -2.0]
+
+    gui = ti.GUI("3D MVP Transformation", res=(WIDTH, HEIGHT))
+
+    angle = 0.0
+    axis = 2          # 默认绕 Z 轴旋转，符合实验基础要求
+    auto_rotate = False
+
+    while gui.running:
+        if gui.get_event(ti.GUI.PRESS):
+            if gui.event.key == 'a':
+                angle += 10.0
+            elif gui.event.key == 'd':
+                angle -= 10.0
+            elif gui.event.key == 'r':
+                angle = 0.0
+            elif gui.event.key == 'x':
+                axis = 0
+            elif gui.event.key == 'y':
+                axis = 1
+            elif gui.event.key == 'z':
+                axis = 2
+            elif gui.event.key == ti.GUI.SPACE:
+                auto_rotate = not auto_rotate
+            elif gui.event.key == ti.GUI.ESCAPE:
+                gui.running = False
+
+        if auto_rotate:
+            angle += 1.0
+
+        compute_transform(angle, axis)
+
+        a = screen_coords[0]
+        b = screen_coords[1]
+        c = screen_coords[2]
+
+        # 每帧清屏，避免画面残留
+        gui.clear(0x112F41)
+
+        # 绘制彩色线框三角形
+        gui.line(a, b, radius=2, color=0xFF0000)
+        gui.line(b, c, radius=2, color=0x00FF00)
+        gui.line(c, a, radius=2, color=0x0000FF)
+
+        # 状态显示
+        gui.text(f"Angle: {angle:.1f}", pos=(0.02, 0.95), color=0xFFFFFF)
+        gui.text(f"Axis: {axis_name(axis)}", pos=(0.02, 0.91), color=0xFFFFFF)
+        gui.text(f"Auto Rotate: {'ON' if auto_rotate else 'OFF'}",
+                 pos=(0.02, 0.87), color=0xFFFFFF)
+        gui.text("A/D rotate | X/Y/Z axis | R reset | SPACE auto | ESC quit",
+                 pos=(0.02, 0.03), color=0xFFFFFF)
+
+        gui.show()
+
 
 if __name__ == '__main__':
     main()

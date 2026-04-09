@@ -1,3 +1,4 @@
+# 作为课程实验结构的一部分，试一试老师的代码的和我的代码有什么不同
 import taichi as ti
 import math
 
