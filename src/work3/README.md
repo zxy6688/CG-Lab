@@ -60,20 +60,12 @@
     assets/work3/demo_antialias.gif
     assets/work3/demo_bspline_compare.gif
 
-本 README 位于 `src/Work3/README.md`，则插入 GIF 的相对路径可写为：
-
-    ![Basic Bezier Demo](../../assets/work3/demo_basic.gif)
-
-    ![Anti-Aliasing Demo](../../assets/work3/demo_antialias.gif)
-
-    ![Bezier vs B-Spline Demo](../../assets/work3/demo_bspline_compare.gif)
-
 
 ### 1. 必做实验演示图
 
 ![Basic Bezier Demo](../../assets/work3/demo_basic.gif)
 
-建议录制内容：
+录制内容：
 - 启动程序
 - 鼠标左键连续添加多个控制点
 - 显示控制点、控制折线和绿色贝塞尔曲线
