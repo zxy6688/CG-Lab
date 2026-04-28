@@ -63,9 +63,20 @@
 
 ### 1. 必做实验演示图
 
-![Basic Bezier Demo](../../assets/work3/demo_basic.gif)
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="../../assets/work3/demo_basic.gif" width="100%" alt="Basic Bezier Demo">
+      <p><strong>动态演示图</strong></p>
+    </td>
+    <td align="center" width="50%">
+      <img src="../../assets/work3/demo_basic.png" width="100%" alt="Basic Bezier Terminal Output">
+      <p><strong>终端输出说明图</strong></p>
+    </td>
+  </tr>
+</table>
 
-录制内容：
+
 - 启动程序
 - 鼠标左键连续添加多个控制点
 - 显示控制点、控制折线和绿色贝塞尔曲线
@@ -73,23 +84,43 @@
 
 ### 2. 选做一：反走样演示图
 
-![Anti-Aliasing Demo](../../assets/work3/demo_antialias.gif)
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="../../assets/work3/demo_antialias.gif" width="100%" alt="Anti-Aliasing Demo">
+      <p><strong>动态演示图</strong></p>
+    </td>
+    <td align="center" width="50%">
+      <img src="../../assets/work3/demo_antialias.png" width="100%" alt="Anti-Aliasing Terminal Output">
+      <p><strong>终端输出说明图</strong></p>
+    </td>
+  </tr>
+</table>
 
-录制内容：
 - 添加若干控制点
 - 显示普通渲染与反走样渲染的效果差异
 - 演示曲线边缘更加平滑的视觉效果
 
+
 ### 3. 选做二：Bezier 与 B-Spline 对比演示图
 
-![Bezier vs B-Spline Demo](../../assets/work3/demo_bspline_compare.gif)
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="../../assets/work3/demo_bspline_compare.gif" width="100%" alt="Bezier vs B-Spline Demo">
+      <p><strong>动态演示图</strong></p>
+    </td>
+    <td align="center" width="50%">
+      <img src="../../assets/work3/demo_bspline_compare.png" width="100%" alt="Bezier vs B-Spline Terminal Output">
+      <p><strong>终端输出说明图</strong></p>
+    </td>
+  </tr>
+</table>
 
-录制内容：
 - 添加超过 4 个控制点
 - 同屏显示 Bezier 曲线与 B-Spline 曲线
 - 观察两者形态差异
 - 切换不同显示模式进行比较
-
 ## 三、实验目标
 
 本实验围绕给出的任务说明，目标包括：
