@@ -1,6 +1,119 @@
-# 计算机图形学 - 实验五
+# 计算机图形学实验五：光线追踪 Ray Tracing
 
-# 实验名称：光线追踪 Ray Tracing
+<a id="toc"></a>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.13-blue?style=for-the-badge&logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/Taichi-1.7.4-orange?style=for-the-badge" alt="Taichi">
+  <img src="https://img.shields.io/badge/Backend-Vulkan-green?style=for-the-badge" alt="Backend">
+  <img src="https://img.shields.io/badge/Work5-Ray%20Tracing-purple?style=for-the-badge" alt="Work5">
+  <img src="https://img.shields.io/badge/Status-Completed-brightgreen?style=for-the-badge" alt="Status">
+</p>
+
+## 目录
+
+<details open>
+<summary><strong>一、本次实验任务与收获</strong></summary>
+
+- [一、本次实验任务与收获](#section-1)
+
+</details>
+
+<details open>
+<summary><strong>二、文件结构</strong></summary>
+
+- [二、文件结构](#section-2)
+
+</details>
+
+<details open>
+<summary><strong>三、运行方式</strong></summary>
+
+- [三、运行方式](#section-3)
+  - [3.1 老师参考代码测试版](#section-3-1)
+  - [3.2 基础光线追踪版本](#section-3-2)
+  - [3.3 选做一：玻璃折射版本](#section-3-3)
+  - [3.4 选做二：MSAA 抗锯齿版本](#section-3-4)
+  - [3.5 使用 uv 运行](#section-3-5)
+
+</details>
+
+<details open>
+<summary><strong>四、实验目标</strong></summary>
+
+- [四、实验目标](#section-4)
+  - [4.1 理论理解](#section-4-1)
+  - [4.2 全局光照](#section-4-2)
+  - [4.3 GPU 编程思维](#section-4-3)
+
+</details>
+
+<details open>
+<summary><strong>五、实验原理</strong></summary>
+
+- [五、实验原理](#section-5)
+  - [5.1 光线表示](#section-5-1)
+  - [5.2 球体求交](#section-5-2)
+  - [5.3 平面求交](#section-5-3)
+  - [5.4 棋盘格纹理](#section-5-4)
+  - [5.5 Phong 局部光照](#section-5-5)
+  - [5.6 硬阴影](#section-5-6)
+  - [5.7 镜面反射](#section-5-7)
+  - [5.8 迭代式光线弹射](#section-5-8)
+  - [5.9 Shadow Acne 处理](#section-5-9)
+
+</details>
+
+<details open>
+<summary><strong>六、基础任务实现</strong></summary>
+
+- [六、基础任务实现](#section-6)
+  - [任务 1：搭建包含平面的三维场景](#section-6-1)
+    - [任务要求](#section-6-1-1)
+    - [实现方式](#section-6-1-2)
+    - [可视化结果](#section-6-1-3)
+  - [任务 2：实现基于迭代的光线弹射](#section-6-2)
+    - [任务要求](#section-6-2-1)
+    - [实现方式](#section-6-2-2)
+    - [可视化结果](#section-6-2-3)
+  - [任务 3：实现硬阴影与解决浮点数精度 Bug](#section-6-3)
+    - [任务要求](#section-6-3-1)
+    - [实现方式](#section-6-3-2)
+    - [可视化结果](#section-6-3-3)
+  - [任务 4：完成 UI 交互面板](#section-6-4)
+    - [任务要求](#section-6-4-1)
+    - [实现方式](#section-6-4-2)
+    - [可视化结果](#section-6-4-3)
+
+</details>
+
+<details open>
+<summary><strong>七、选做内容（仅供学有余力的同学选做）</strong></summary>
+
+- [七、选做内容（仅供学有余力的同学选做）](#section-7)
+  - [7.1 选做一：折射与玻璃材质（+15%）](#section-7-1)
+    - [7.1.1 任务要求](#section-7-1-1)
+    - [7.1.2 数学原理](#section-7-1-2)
+    - [7.1.3 实现思路](#section-7-1-3)
+    - [7.1.4 可视化结果](#section-7-1-4)
+    - [7.1.5 本部分小结](#section-7-1-5)
+  - [7.2 选做二：抗锯齿（Anti-Aliasing, MSAA）（+10%）](#section-7-2)
+    - [7.2.1 任务要求](#section-7-2-1)
+    - [7.2.2 数学原理](#section-7-2-2)
+    - [7.2.3 实现思路](#section-7-2-3)
+    - [7.2.4 可视化结果](#section-7-2-4)
+    - [7.2.5 本部分小结](#section-7-2-5)
+
+</details>
+
+<details open>
+<summary><strong>八、实验总结</strong></summary>
+
+- [八、实验总结](#section-8)
+
+</details>
+
+<a id="section-1"></a>
 
 ## 一、本次实验任务与收获
 
@@ -13,6 +126,10 @@
 **第三项任务是完成 MSAA 抗锯齿，对应 `AntiAliasingMSAA.py`。** 基础光线追踪中每个像素只发射一条主光线，因此球体边缘、棋盘格边界和阴影边缘会出现明显锯齿。MSAA 版本在每个像素内部发射多条主光线并取平均，使边缘过渡更加平滑。通过这一部分，可以直观看到采样数量对最终图像质量的影响。
 
 此外，`test.py` 用于运行老师参考代码或测试版本，方便和自己完成的版本进行对比，观察场景大小、相机视角、光照强度和最终渲染效果之间的差异。
+
+<p align="right"><a href="#toc">回到目录 ↑</a></p>
+
+<a id="section-2"></a>
 
 ## 二、文件结构
 
@@ -51,9 +168,15 @@ CG-Lab/
 │       └── README.md                 # 实验说明文档
 ```
 
+<p align="right"><a href="#toc">回到目录 ↑</a></p>
+
+<a id="section-3"></a>
+
 ## 三、运行方式
 
 在项目根目录下运行。
+
+<a id="section-3-1"></a>
 
 ### 3.1 老师参考代码测试版
 
@@ -65,6 +188,8 @@ python -u "src/work5/test.py"
 
 ![Teacher Test](../../assets/work5/teacher_test.png)
 
+<a id="section-3-2"></a>
+
 ### 3.2 基础光线追踪版本
 
 ```bash
@@ -74,6 +199,8 @@ python -u "src/work5/main.py"
 该版本完成实验五基础任务，包括棋盘格地面、红色漫反射球、银色镜面球、硬阴影、镜面反射和 UI 交互控制。
 
 ![Ray Tracing Basic](../../assets/work5/raytracing_basic.png)
+
+<a id="section-3-3"></a>
 
 ### 3.3 选做一：玻璃折射版本
 
@@ -85,6 +212,8 @@ python -u "src/work5/GlassRefraction.py"
 
 ![Glass Refraction](../../assets/work5/glass_refraction.png)
 
+<a id="section-3-4"></a>
+
 ### 3.4 选做二：MSAA 抗锯齿版本
 
 ```bash
@@ -94,6 +223,8 @@ python -u "src/work5/AntiAliasingMSAA.py"
 该版本在基础光线追踪流程上增加多重采样抗锯齿，可以通过 `AA Grid` 控制每个像素内部的采样数量。
 
 ![MSAA Compare](../../assets/work5/msaa_compare.gif)
+
+<a id="section-3-5"></a>
 
 ### 3.5 使用 uv 运行
 
@@ -105,25 +236,41 @@ uv run python src/work5/main.py
 
 如果运行时出现类似 `nvcuda.dll lib not found` 的提示，但后面显示启动在 `vulkan` 后端，一般不影响程序运行。这说明当前机器没有使用 CUDA，而是自动切换到了 Vulkan 后端。
 
+<p align="right"><a href="#toc">回到目录 ↑</a></p>
+
+<a id="section-4"></a>
+
 ## 四、实验目标
+
+<a id="section-4-1"></a>
 
 ### 4.1 理论理解
 
 理解光线投射 Ray Casting 与光线追踪 Ray Tracing 的本质区别。Ray Casting 通常只考虑相机主光线与场景的第一次交点，而 Ray Tracing 会在交点处继续发射次级射线，例如阴影射线、反射射线和折射射线，从而得到更加丰富的视觉效果。
 
+<a id="section-4-2"></a>
+
 ### 4.2 全局光照
 
 掌握通过发射 **Secondary Rays** 实现硬阴影和理想镜面反射的方法。阴影射线用于判断光源是否被遮挡，反射射线用于模拟镜面球中的环境反射。选做部分进一步加入折射射线，用于模拟玻璃材质中的透明和折射现象。
 
+<a id="section-4-3"></a>
+
 ### 4.3 GPU 编程思维
 
 传统光线追踪常用递归写法，但 GPU Kernel 中不适合递归。本实验将递归式光线追踪改写为固定次数的循环，通过 `throughput` 记录光线能量衰减，通过 `final_color` 累积最终颜色，从而使算法更适合 GPU 并行执行。
+
+<p align="right"><a href="#toc">回到目录 ↑</a></p>
+
+<a id="section-5"></a>
 
 ## 五、实验原理
 
 本实验采用经典的 **Whitted-Style 光线追踪模型**。每个像素首先从相机发出一条主光线，主光线进入场景后与球体和平面求交。程序找到距离相机最近的交点后，根据命中的材质类型进入不同分支。
 
 当主光线命中漫反射物体时，程序计算局部 Phong 光照，并额外发射一条阴影射线判断该点是否处于阴影中。当光线命中镜面物体时，程序根据反射定律生成新的反射射线，并继续追踪。当光线命中玻璃物体时，程序根据斯涅尔定律生成折射光线，并在发生全反射时切换为反射方向。
+
+<a id="section-5-1"></a>
 
 ### 5.1 光线表示
 
@@ -134,6 +281,8 @@ $$
 $$
 
 其中，`O` 表示光线起点，`D` 表示单位方向向量，`t` 表示光线沿方向前进的距离。只有当 `t > 0` 时，交点才位于光线前方。
+
+<a id="section-5-2"></a>
 
 ### 5.2 球体求交
 
@@ -176,6 +325,8 @@ intersect_sphere()
 intersect_scene()
 ```
 
+<a id="section-5-3"></a>
+
 ### 5.3 平面求交
 
 本实验中的地面是无限大平面，位置为：
@@ -214,6 +365,8 @@ $$
 intersect_scene()
 ```
 
+<a id="section-5-4"></a>
+
 ### 5.4 棋盘格纹理
 
 地面的棋盘格纹理由交点的 x 坐标和 z 坐标决定。设交点为：
@@ -236,13 +389,9 @@ $$
 get_checker_color()
 ```
 
+<a id="section-5-5"></a>
+
 ### 5.5 Phong 局部光照
-
-漫反射物体和地面使用 Phong 光照模型计算颜色。局部光照由环境光、漫反射光和高光组成：
-
-$$
-\mathbf{I}=\mathbf{I}_{ambient}+\mathbf{I}_{diffuse}+\mathbf{I}_{specular}
-$$
 
 环境光为：
 
@@ -276,6 +425,8 @@ $$
 phong_shading()
 ```
 
+<a id="section-5-6"></a>
+
 ### 5.6 硬阴影
 
 对于已经命中的表面点 `P`，程序从该点向光源位置 `L_pos` 发射阴影射线：
@@ -299,6 +450,8 @@ is_in_shadow()
 phong_shading()
 ```
 
+<a id="section-5-7"></a>
+
 ### 5.7 镜面反射
 
 当光线命中镜面球时，程序根据反射定律计算新的反射方向：
@@ -315,6 +468,8 @@ $$
 reflect()
 trace_ray()
 ```
+
+<a id="section-5-8"></a>
 
 ### 5.8 迭代式光线弹射
 
@@ -364,6 +519,8 @@ $$
 trace_ray()
 ```
 
+<a id="section-5-9"></a>
+
 ### 5.9 Shadow Acne 处理
 
 如果阴影射线或反射射线直接从交点出发，浮点误差可能导致射线立刻再次命中自身所在表面，产生错误阴影或黑色噪点。为避免这个问题，新的射线起点需要沿法线方向偏移一个很小的距离：
@@ -385,9 +542,17 @@ shadow_origin = hit_pos + normal * EPS
 current_origin = hit_pos + normal * EPS
 ```
 
+<p align="right"><a href="#toc">回到目录 ↑</a></p>
+
+<a id="section-6"></a>
+
 ## 六、基础任务实现
 
+<a id="section-6-1"></a>
+
 ## 任务 1：搭建包含平面的三维场景
+
+<a id="section-6-1-1"></a>
 
 ### 任务要求
 
@@ -401,6 +566,8 @@ current_origin = hit_pos + normal * EPS
 
 **3. 银色镜面球 Silver Mirror Sphere**  
 位于右侧，球心为 `(1.5, 0.0, 0.0)`，半径为 `1.0`，设为纯镜面反射材质。
+
+<a id="section-6-1-2"></a>
 
 ### 实现方式
 
@@ -424,13 +591,19 @@ get_checker_color()
 intersect_scene()
 ```
 
+<a id="section-6-1-3"></a>
+
 ### 可视化结果
 
 ![Task1 Scene](../../assets/work5/task1_scene.png)
 
 图中可以看到实验要求的三个几何体：下方为无限大棋盘格平面，左侧为红色漫反射球，右侧为银色镜面球。所有物体均由程序中的数学方程直接定义，没有导入外部模型。
 
+<a id="section-6-2"></a>
+
 ## 任务 2：实现基于迭代的光线弹射
+
+<a id="section-6-2-1"></a>
 
 ### 任务要求
 
@@ -443,6 +616,8 @@ intersect_scene()
 最终颜色，用于累积当前像素的结果，初始为 0。
 
 当光线击中镜面物体时，更新光线起点和方向，并让 `throughput` 乘以反射率继续传播；当光线击中漫反射物体时，计算局部光照颜色并终止当前光线。
+
+<a id="section-6-2-2"></a>
 
 ### 实现方式
 
@@ -501,13 +676,19 @@ for bounce in range(MAX_BOUNCES_LIMIT):
         throughput *= mirror_reflectance
 ```
 
+<a id="section-6-2-3"></a>
+
 ### 可视化结果
 
 ![Task2 Max Bounces](../../assets/work5/task2_max_bounces.gif)
 
 该动图展示了 `Max Bounces` 从 1 增加到 5 的过程。当弹射次数较小时，镜面球中的反射内容不明显；当弹射次数增加后，镜面球可以反射棋盘格地面、天空背景和场景物体，说明反射光线被继续追踪。
 
+<a id="section-6-3"></a>
+
 ## 任务 3：实现硬阴影与解决浮点数精度 Bug
+
+<a id="section-6-3-1"></a>
 
 ### 任务要求
 
@@ -518,6 +699,8 @@ for bounce in range(MAX_BOUNCES_LIMIT):
 $$
 \mathbf{P}_{new}=\mathbf{P}+\epsilon\mathbf{N}
 $$
+
+<a id="section-6-3-2"></a>
 
 ### 实现方式
 
@@ -546,13 +729,19 @@ if hit == 1 and t < light_distance - EPS:
 
 在 `phong_shading()` 中，如果 `shadow == 1`，则只保留环境光；如果没有阴影，则继续计算漫反射和高光。
 
+<a id="section-6-3-3"></a>
+
 ### 可视化结果
 
 ![Task3 Hard Shadow](../../assets/work5/task3_hard_shadow.png)
 
 图中可以看到红色球和银色球在棋盘格地面上产生了清晰的硬阴影。阴影边界较锐利，这是因为本实验使用的是点光源。程序中对 shadow ray 起点进行了 `EPS` 偏移，因此画面中没有出现由自相交导致的大面积黑色噪点。
 
+<a id="section-6-4"></a>
+
 ## 任务 4：完成 UI 交互面板
+
+<a id="section-6-4-1"></a>
 
 ### 任务要求
 
@@ -563,6 +752,8 @@ if hit == 1 and t < light_distance - EPS:
 
 **2. `Max Bounces`**  
 控制最大弹射次数，范围为 1 到 5，默认值为 3。观察弹射次数为 1 时和弹射次数大于 1 时镜面反射效果的区别。
+
+<a id="section-6-4-2"></a>
 
 ### 实现方式
 
@@ -598,31 +789,17 @@ max_bounces = int(max_bounces_float + 0.5)
 gui.end()
 ```
 
+<a id="section-6-4-3"></a>
+
 ### 可视化结果
 
-#### （1）调节 Light X 的交互效果
+![Task4 UI](../../assets/work5/task4_ui.gif)
 
-![Task4 UI X](../../assets/work5/task4_ui_x.gif)
+该动图展示了通过 UI 面板实时调节光源位置和最大弹射次数的过程。拖动 `Light X / Light Y / Light Z` 时，地面阴影会随光源位置变化；调节 `Max Bounces` 时，镜面球中的反射内容会发生明显变化。
 
-该动图展示了拖动 `Light X` 时场景的变化过程。随着光源在 x 方向上左右移动，地面阴影的方向和位置会实时变化，能够直观看到光照方向改变对阴影投射结果的影响。
+<p align="right"><a href="#toc">回到目录 ↑</a></p>
 
-#### （2）调节 Light Y 的交互效果
-
-![Task4 UI Y](../../assets/work5/task4_ui_y.gif)
-
-该动图展示了拖动 `Light Y` 时场景的变化过程。随着光源高度发生变化，阴影的长度和明暗关系会明显改变。光源越低，阴影通常越长；光源越高，阴影则更短、更集中。
-
-#### （3）调节 Light Z 的交互效果
-
-![Task4 UI Z](../../assets/work5/task4_ui_z.gif)
-
-该动图展示了拖动 `Light Z` 时场景的变化过程。随着光源在 z 方向前后移动，球体和地面上阴影的落点会发生偏移，同时镜面球中的高光和反射区域也会出现对应变化。
-
-#### （4）调节 Max Bounces 的交互效果
-
-![Task4 UI Bounces](../../assets/work5/task4_ui.gif)
-
-该动图展示了拖动 `Max Bounces` 时场景的变化过程。随着最大弹射次数从较小值逐渐增大，镜面球中的反射内容会更加丰富，说明反射光线被继续追踪，镜中环境信息也更加完整。
+<a id="section-7"></a>
 
 ## 七、选做内容（仅供学有余力的同学选做）
 
@@ -632,11 +809,17 @@ gui.end()
 
 本实验进一步完成了两个选做内容，分别是 **折射与玻璃材质** 和 **抗锯齿（MSAA）**。下面按照实验要求分别说明实现思路与结果。
 
+<a id="section-7-1"></a>
+
 ## 7.1 选做一：折射与玻璃材质（+15%）
+
+<a id="section-7-1-1"></a>
 
 ### 7.1.1 任务要求
 
 在基础场景的基础上，引入 **斯涅尔定律（Snell's Law）**，将原来的红球改为玻璃材质。程序需要根据折射率计算透射光线方向，并在玻璃内部发生 **全反射（Total Internal Reflection）** 时进行处理。
+
+<a id="section-7-1-2"></a>
 
 ### 7.1.2 数学原理
 
@@ -650,10 +833,10 @@ $$
 
 其中：
 
-- `n_1` 表示入射介质折射率；
-- `n_2` 表示折射介质折射率；
-- `theta_1` 表示入射角；
-- `theta_2` 表示折射角。
+- $n_1$ 表示入射介质折射率；
+- $n_2$ 表示折射介质折射率；
+- $\theta_1$ 表示入射角；
+- $\theta_2$ 表示折射角。
 
 在本实验中，空气折射率通常取：
 
@@ -669,7 +852,7 @@ $$
 
 #### （2）折射方向的向量形式
 
-程序中并不直接通过角度求折射方向，而是采用向量形式。设入射方向为 `D`，表面法线为 `N`，折射率比为：
+程序中并不直接通过角度求折射方向，而是采用向量形式。设入射方向为 $\mathbf{D}$，表面法线为 $\mathbf{N}$，折射率比为：
 
 $$
 \eta=\frac{n_1}{n_2}
@@ -721,12 +904,14 @@ $$
 
 该公式表示：当视线更接近掠射方向时，玻璃表面的反射更强；当视线更接近正视方向时，折射更明显。这样可以让玻璃球边缘产生更自然的亮边和高光。
 
+<a id="section-7-1-3"></a>
+
 ### 7.1.3 实现思路
 
 本实验在基础版本场景上，将左侧红色漫反射球替换为玻璃材质球，场景中的右侧银色球和棋盘格地面保持不变。程序实现逻辑如下：
 
 1. 当主光线或次级光线命中玻璃球时，首先判断当前光线是从空气进入玻璃，还是从玻璃离开玻璃表面进入空气；
-2. 根据当前的入射方向和法线方向，确定折射率比 `eta`；
+2. 根据当前的入射方向和法线方向，确定折射率比 $\eta$；
 3. 尝试根据折射公式生成新的折射光线方向；
 4. 如果可以折射，则继续沿折射方向传播，并对光线吞吐量 `throughput` 乘以一个带颜色的衰减系数，使玻璃带有轻微的红色调；
 5. 如果不能折射，则说明发生了全反射，此时改为生成反射光线；
@@ -745,6 +930,8 @@ glass_highlight()
 trace_ray()
 ```
 
+<a id="section-7-1-4"></a>
+
 ### 7.1.4 可视化结果
 
 #### （1）玻璃折射整体效果
@@ -753,55 +940,45 @@ trace_ray()
 
 图中左侧球体已经由红色漫反射球替换为玻璃球。可以看到球体具有透明感，背景中的棋盘格和环境会在球体内部发生一定的折射变形。
 
-#### （2）调节 Light X 时的玻璃折射效果
-
-![Glass Bounces X](../../assets/work5/glass_bounces_x.gif)
-
-该动图展示了拖动 `Light X` 时玻璃场景的变化过程。随着光源在 x 方向移动，玻璃球表面的高光位置、地面阴影方向以及球体内部折射后的亮暗分布都会发生变化。
-
-#### （3）调节 Light Y 时的玻璃折射效果
-
-![Glass Bounces Y](../../assets/work5/glass_bounces_y.gif)
-
-该动图展示了拖动 `Light Y` 时玻璃场景的变化过程。随着光源高度变化，玻璃球表面的亮斑强度、阴影长度以及折射区域的层次感会发生明显变化。
-
-#### （4）调节 Light Z 时的玻璃折射效果
-
-![Glass Bounces Z](../../assets/work5/glass_bounces_z.gif)
-
-该动图展示了拖动 `Light Z` 时玻璃场景的变化过程。随着光源在 z 方向前后移动，玻璃球中的折射内容与镜面球中的反射区域都会同步变化，体现了光源位置对整体视觉效果的影响。
-
-#### （5）弹射次数与玻璃透明感、折射效果变化
+#### （2）玻璃材质弹射次数变化
 
 ![Glass Bounces](../../assets/work5/glass_bounces.gif)
 
-该动图展示了 `Max Bounces` 增大时玻璃材质的变化过程。随着最大弹射次数增加，折射路径更加完整，玻璃球的透明感、内部光线路径以及折射效果都更加明显。
+该动图展示了 `Max Bounces` 增大时玻璃材质的变化过程。随着最大弹射次数增加，折射路径更加完整，玻璃球的透明感和内部光线路径更加明显。
 
-#### （6）全反射或边缘高光效果
+#### （3）全反射或边缘高光效果
 
 ![Glass Highlight](../../assets/work5/glass_highlight.png)
 
 该图展示玻璃球边缘区域更强的反射效果。由于 Fresnel 近似的引入，球体边缘区域会出现更亮的高光和反射边界，使玻璃材质看起来更加自然。
 
+<a id="section-7-1-5"></a>
+
 ### 7.1.5 本部分小结
 
 选做一在基础镜面反射的基础上进一步加入了折射机制，使程序不再局限于“反射型材质”，而能够表达更复杂的透明介质效果。通过斯涅尔定律计算折射方向、通过全反射条件处理特殊情况、再结合 Fresnel 近似增强边缘反射，最终实现了比较完整的玻璃材质渲染效果。
 
+<a id="section-7-2"></a>
+
 ## 7.2 选做二：抗锯齿（Anti-Aliasing, MSAA）（+10%）
+
+<a id="section-7-2-1"></a>
 
 ### 7.2.1 任务要求
 
 基础光线追踪程序中，每个像素只发射一条主光线，因此在球体边缘、棋盘格边界和阴影边缘处会出现明显锯齿。选做二要求在每个像素内部进行多次采样，并将结果取平均，从而实现更加平滑的边缘过渡。
+
+<a id="section-7-2-2"></a>
 
 ### 7.2.2 数学原理
 
 在普通单采样情况下，一个像素颜色可以写成：
 
 $$
-\mathbf{C}(i,j)=\mathrm{trace}(\mathbf{r}_{i,j})
+\mathbf{C}(i,j)=\operatorname{trace}(\mathbf{r}_{i,j})
 $$
 
-其中，`r_{i,j}` 表示像素 `(i,j)` 对应的一条主光线。
+其中，$\mathbf{r}_{i,j}$ 表示像素 $(i,j)$ 对应的一条主光线。
 
 而在多重采样抗锯齿中，一个像素内部会发射多条主光线，并对结果求平均：
 
@@ -811,23 +988,24 @@ $$
 
 其中：
 
-- `N` 表示该像素内的采样数量；
-- `C_k(i,j)` 表示第 `k` 次子采样得到的颜色。
+- $N$ 表示该像素内的采样数量；
+- $\mathbf{C}_k(i,j)$ 表示第 $k$ 次子采样得到的颜色。
 
-如果每个像素内部采用 `m × m` 的规则采样网格，则总采样数为：
+如果每个像素内部采用 $m \times m$ 的规则采样网格，则总采样数为：
 
 $$
 N=m^2
 $$
 
+例如：
 
-- 当 `AA Grid = 1` 时，`N = 1`；
-- 当 `AA Grid = 2` 时，`N = 4`；
-- 当 `AA Grid = 3` 时，`N = 9`；
-- 当 `AA Grid = 4` 时，`N = 16`；
-- 当 `AA Grid = 5` 时，`N = 25`。
+- 当 `AA Grid = 1` 时，$N=1$；
+- 当 `AA Grid = 2` 时，$N=4$；
+- 当 `AA Grid = 3` 时，$N=9$。
 
 采样点分布在像素内部不同的子区域中，因此边缘附近的像素不再只是“命中”或“未命中”的二元结果，而是多个子采样结果的平均值，从而产生更平滑的视觉过渡。
+
+<a id="section-7-2-3"></a>
 
 ### 7.2.3 实现思路
 
@@ -850,13 +1028,15 @@ render()
 trace_ray()
 ```
 
+<a id="section-7-2-4"></a>
+
 ### 7.2.4 可视化结果
 
 #### （1）MSAA 动态对比
 
 ![MSAA Compare](../../assets/work5/msaa_compare.gif)
 
-该动图展示了 `AA Grid` 从 1 提升到 5 的过程。可以看到球体轮廓、棋盘格边界和阴影边缘逐渐由锯齿状变得平滑。
+该动图展示了 `AA Grid` 从 1 提升到 3 的过程。可以看到球体轮廓、棋盘格边界和阴影边缘逐渐由锯齿状变得平滑。
 
 #### （2）单采样结果
 
@@ -866,9 +1046,9 @@ trace_ray()
 
 #### （3）多采样结果
 
-![AA Grid 3](../../assets/work5/aa_grid_5.png)
+![AA Grid 3](../../assets/work5/aa_grid_3.png)
 
-在 `AA Grid = 5` 时，每个像素内部发射 `5 × 5 = 25` 条主光线。与单采样相比，球体边缘和棋盘格边界更加平滑，整体观感明显提升。
+在 `AA Grid = 3` 时，每个像素内部发射 $3 \times 3 = 9$ 条主光线。与单采样相比，球体边缘和棋盘格边界更加平滑，整体观感明显提升。
 
 #### （4）局部边缘放大对比
 
@@ -876,11 +1056,17 @@ trace_ray()
 | --- | --- |
 | ![Edge Zoom No AA](../../assets/work5/edge_zoom_noaa.png) | ![Edge Zoom MSAA](../../assets/work5/edge_zoom_msaa.png) |
 
-该组图对边缘局部进行了放大。可以明显看到，MSAA 通过对同一像素内部多个子采样结果求平均，使边缘附近像素形成更自然的灰度过渡，而不是突兀的锯齿跳变。MSAA 主要改善的是物体轮廓、棋盘格边界和阴影边缘等高频区域，因此在整张图中的变化不一定十分夸张。为了更直观地展示抗锯齿效果，我就额外截取了球体边缘的局部放大图进行对比。
+该组图对边缘局部进行了放大。可以明显看到，MSAA 通过对同一像素内部多个子采样结果求平均，使边缘附近像素形成更自然的灰度过渡，而不是突兀的锯齿跳变。
+
+<a id="section-7-2-5"></a>
 
 ### 7.2.5 本部分小结
 
 选做二在不改变场景结构和材质系统的前提下，对“每个像素如何采样”进行了扩展。通过多重采样，程序能够更准确地估计边缘像素的真实颜色，从而有效缓解锯齿问题。虽然采样数增加会提高计算开销，但换来了更好的画面质量，这也是渲染中常见的质量与效率权衡。
+
+<p align="right"><a href="#toc">回到目录 ↑</a></p>
+
+<a id="section-8"></a>
 
 ## 八、实验总结
 
@@ -889,3 +1075,5 @@ trace_ray()
 在光线传播方式上，程序没有采用递归，而是使用固定次数的循环实现光线弹射。通过 `throughput` 记录光线能量衰减，通过 `final_color` 累积像素颜色，使算法更加适合 GPU 并行执行。硬阴影由从交点发出的 shadow ray 实现，镜面反射由反射射线实现，Shadow Acne 问题则通过对新射线起点进行 `EPS` 偏移解决。
 
 选做部分中，玻璃折射材质扩展了原有材质系统，使程序能够处理折射、全反射和 Fresnel 边缘反射；MSAA 抗锯齿则从像素采样角度提升了图像质量，使球体轮廓和棋盘格边界更加平滑。整体来看，本实验从几何求交、局部光照、阴影测试、镜面反射、玻璃折射和抗锯齿多个方面构成了一个较完整的基础光线追踪渲染流程。
+
+<p align="right"><a href="#toc">回到目录 ↑</a></p>
