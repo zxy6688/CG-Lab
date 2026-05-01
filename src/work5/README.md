@@ -2,8 +2,6 @@
 
 <br>
 
-<a id="toc"></a>
-
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.13-blue?style=for-the-badge&logo=python&logoColor=white" alt="Python">
   <img src="https://img.shields.io/badge/Taichi-1.7.4-orange?style=for-the-badge" alt="Taichi">
@@ -13,6 +11,8 @@
 </p>
 
 <br>
+
+<a id="toc"></a>
 
 ## 目录
 
@@ -811,37 +811,11 @@ gui.end()
 
 ### 可视化结果
 
-#### （1）调节 Light X 的交互效果
-
 <p align="center">
-  <img src="../../assets/work5/task4_ui_x.gif" alt="Task4 UI X" width="720">
+  <img src="../../assets/work5/task4_ui.gif" alt="Task4 UI" width="720">
 </p>
 
-该动图展示了拖动 `Light X` 时场景的变化过程。随着光源在 x 方向上左右移动，地面阴影的方向和位置会实时变化，能够直观看到光照方向改变对阴影投射结果的影响。
-
-#### （2）调节 Light Y 的交互效果
-
-<p align="center">
-  <img src="../../assets/work5/task4_ui_y.gif" alt="Task4 UI Y" width="720">
-</p>
-
-该动图展示了拖动 `Light Y` 时场景的变化过程。随着光源高度发生变化，阴影的长度和明暗关系会明显改变。光源越低，阴影通常越长；光源越高，阴影则更短、更集中。
-
-#### （3）调节 Light Z 的交互效果
-
-<p align="center">
-  <img src="../../assets/work5/task4_ui_z.gif" alt="Task4 UI Z" width="720">
-</p>
-
-该动图展示了拖动 `Light Z` 时场景的变化过程。随着光源在 z 方向前后移动，球体和地面上阴影的落点会发生偏移，同时镜面球中的高光和反射区域也会出现对应变化。
-
-#### （4）调节 Max Bounces 的交互效果
-
-<p align="center">
-  <img src="../../assets/work5/task4_ui.gif" alt="Task4 UI Bounces" width="720">
-</p>
-
-该动图展示了拖动 `Max Bounces` 时场景的变化过程。随着最大弹射次数从较小值逐渐增大，镜面球中的反射内容会更加丰富，说明反射光线被继续追踪，镜中环境信息也更加完整。
+该动图展示了通过 UI 面板实时调节光源位置和最大弹射次数的过程。拖动 `Light X / Light Y / Light Z` 时，地面阴影会随光源位置变化；调节 `Max Bounces` 时，镜面球中的反射内容会发生明显变化。
 
 <p align="right"><a href="#toc">回到目录 ↑</a></p>
 
@@ -1055,7 +1029,9 @@ $$
 
 - 当 `AA Grid = 1` 时，$N=1$；
 - 当 `AA Grid = 2` 时，$N=4$；
-- 当 `AA Grid = 3` 时，$N=9$。
+- 当 `AA Grid = 3` 时，$N=9$；
+- 当 `AA Grid = 4` 时，$N=16$；
+- 当 `AA Grid = 5` 时，$N=25$。
 
 采样点分布在像素内部不同的子区域中，因此边缘附近的像素不再只是“命中”或“未命中”的二元结果，而是多个子采样结果的平均值，从而产生更平滑的视觉过渡。
 
@@ -1092,7 +1068,7 @@ trace_ray()
   <img src="../../assets/work5/msaa_compare.gif" alt="MSAA Compare" width="720">
 </p>
 
-该动图展示了 `AA Grid` 从 1 提升到 3 的过程。可以看到球体轮廓、棋盘格边界和阴影边缘逐渐由锯齿状变得平滑。
+该动图展示了 `AA Grid` 从 1 提升到 5 的过程。可以看到球体轮廓、棋盘格边界和阴影边缘逐渐由锯齿状变得平滑。
 
 #### （2）单采样结果
 
@@ -1105,10 +1081,10 @@ trace_ray()
 #### （3）多采样结果
 
 <p align="center">
-  <img src="../../assets/work5/aa_grid_3.png" alt="AA Grid 3" width="720">
+  <img src="../../assets/work5/aa_grid_5.png" alt="AA Grid 5" width="720">
 </p>
 
-在 `AA Grid = 3` 时，每个像素内部发射 $3 \times 3 = 9$ 条主光线。与单采样相比，球体边缘和棋盘格边界更加平滑，整体观感明显提升。
+在 `AA Grid = 5` 时，每个像素内部发射 $5 \times 5 = 25$ 条主光线。与单采样相比，球体边缘和棋盘格边界更加平滑，整体观感明显提升。
 
 #### （4）局部边缘放大对比
 
