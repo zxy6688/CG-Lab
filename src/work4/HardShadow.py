@@ -3,146 +3,116 @@ import taichi.math as tm
 
 ti.init(arch=ti.gpu)
 
-W, H = 960, 640
-ASPECT = W / H
-VIEW_SCALE = 1.8
-EPS = 1e-4
-INF = 1e8
-SHADOW_BIAS = 2e-3
-
+W, H = 800, 600
 pixels = ti.Vector.field(3, dtype=ti.f32, shape=(W, H))
 
+EPS = 1e-4
+INF = 1e9
+SHADOW_BIAS = 2e-3
+
 # ----------------------------
-# 场景常量
+# 场景参数
 # ----------------------------
+CAMERA = tm.vec3(0.0, 0.0, 5.0)
+LIGHT = tm.vec3(2.0, 3.0, 4.0)
 
-# Camera
-CAM_X, CAM_Y, CAM_Z = 0.0, 0.0, 5.0
+SPHERE_CENTER = tm.vec3(-1.2, -0.2, 0.0)
+SPHERE_RADIUS = 1.2
+SPHERE_COLOR = tm.vec3(0.8, 0.1, 0.1)
 
-# Light
-LIGHT_X, LIGHT_Y, LIGHT_Z = 2.0, 3.0, 4.0
+CONE_APEX = tm.vec3(1.2, 1.2, 0.0)
+CONE_BASE_Y = -1.4
+CONE_RADIUS = 1.2
+CONE_HEIGHT = CONE_APEX.y - CONE_BASE_Y
+CONE_K = CONE_RADIUS / CONE_HEIGHT
+CONE_K2 = CONE_K * CONE_K
+CONE_COLOR = tm.vec3(0.6, 0.2, 0.8)
 
-# Sphere
-SPHERE_CX, SPHERE_CY, SPHERE_CZ = -1.2, -0.2, 0.0
-SPHERE_R = 1.2
-
-# Cone
-APEX_X, APEX_Y, APEX_Z = 1.2, 1.2, 0.0
-BASE_Y = -1.4
-CONE_R = 1.2
-CONE_H = APEX_Y - BASE_Y
-K = CONE_R / CONE_H
-K2 = K * K
-
-# Colors
-BG_R, BG_G, BG_B = 0.03, 0.18, 0.18
-SPHERE_CR, SPHERE_CG, SPHERE_CB = 0.8, 0.1, 0.1
-CONE_CR, CONE_CG, CONE_CB = 0.6, 0.2, 0.8
+GROUND_Y = -1.55
+BACKGROUND = tm.vec3(0.05, 0.15, 0.15)
 
 
 @ti.func
-def sphere_center():
-    return tm.vec3(SPHERE_CX, SPHERE_CY, SPHERE_CZ)
+def normalize(v):
+    return v / v.norm(1e-6)
 
 
 @ti.func
-def cone_apex():
-    return tm.vec3(APEX_X, APEX_Y, APEX_Z)
+def reflect_dir(I, N):
+    return I - 2.0 * I.dot(N) * N
 
 
-@ti.func
-def cam_pos():
-    return tm.vec3(CAM_X, CAM_Y, CAM_Z)
-
-
-@ti.func
-def light_pos():
-    return tm.vec3(LIGHT_X, LIGHT_Y, LIGHT_Z)
-
-
+# ----------------------------
+# 几何求交
+# ----------------------------
 @ti.func
 def intersect_sphere(ro, rd):
-    c = sphere_center()
-    oc = ro - c
-
+    t = INF
+    oc = ro - SPHERE_CENTER
     b = 2.0 * oc.dot(rd)
-    cc = oc.dot(oc) - SPHERE_R * SPHERE_R
-    disc = b * b - 4.0 * cc
+    c = oc.dot(oc) - SPHERE_RADIUS * SPHERE_RADIUS
+    delta = b * b - 4.0 * c
 
-    best_t = INF
-    if disc >= 0.0:
-        sqrt_disc = ti.sqrt(disc)
-        t1 = (-b - sqrt_disc) * 0.5
-        t2 = (-b + sqrt_disc) * 0.5
+    if delta >= 0.0:
+        sqrt_delta = ti.sqrt(delta)
+        t1 = (-b - sqrt_delta) * 0.5
+        t2 = (-b + sqrt_delta) * 0.5
 
         if t1 > EPS:
-            best_t = t1
-        if t2 > EPS and t2 < best_t:
-            best_t = t2
+            t = t1
+        elif t2 > EPS:
+            t = t2
 
-    return best_t
+    return t
 
 
 @ti.func
 def sphere_normal(p):
-    return (p - sphere_center()).normalized()
+    return normalize(p - SPHERE_CENTER)
 
 
 @ti.func
 def intersect_cone(ro, rd):
-    apex = cone_apex()
-    rel = ro - apex
+    t_best = INF
+    hit_part = 0
+    rel = ro - CONE_APEX
 
-    best_t = INF
-    hit_part = 0  # 0=none, 1=side, 2=base
-
-    # 圆锥侧面
-    a = rd.x * rd.x + rd.z * rd.z - K2 * rd.y * rd.y
-    b = 2.0 * (rel.x * rd.x + rel.z * rd.z - K2 * rel.y * rd.y)
-    c = rel.x * rel.x + rel.z * rel.z - K2 * rel.y * rel.y
+    a = rd.x * rd.x + rd.z * rd.z - CONE_K2 * rd.y * rd.y
+    b = 2.0 * (rel.x * rd.x + rel.z * rd.z - CONE_K2 * rel.y * rd.y)
+    c = rel.x * rel.x + rel.z * rel.z - CONE_K2 * rel.y * rel.y
 
     if ti.abs(a) > 1e-6:
-        disc = b * b - 4.0 * a * c
-        if disc >= 0.0:
-            sqrt_disc = ti.sqrt(disc)
-            t1 = (-b - sqrt_disc) / (2.0 * a)
-            t2 = (-b + sqrt_disc) / (2.0 * a)
+        delta = b * b - 4.0 * a * c
+        if delta >= 0.0:
+            sqrt_delta = ti.sqrt(delta)
+            t1 = (-b - sqrt_delta) / (2.0 * a)
+            t2 = (-b + sqrt_delta) / (2.0 * a)
 
             if t1 > EPS:
                 p1 = ro + t1 * rd
-                y1 = p1.y - APEX_Y
-                if y1 >= -CONE_H and y1 <= 0.0:
-                    best_t = t1
+                y1 = p1.y - CONE_APEX.y
+                if -CONE_HEIGHT <= y1 <= 0.0:
+                    t_best = t1
                     hit_part = 1
 
-            if t2 > EPS and t2 < best_t:
+            if t2 > EPS and t2 < t_best:
                 p2 = ro + t2 * rd
-                y2 = p2.y - APEX_Y
-                if y2 >= -CONE_H and y2 <= 0.0:
-                    best_t = t2
+                y2 = p2.y - CONE_APEX.y
+                if -CONE_HEIGHT <= y2 <= 0.0:
+                    t_best = t2
                     hit_part = 1
 
-    elif ti.abs(b) > 1e-6:
-        t_lin = -c / b
-        if t_lin > EPS:
-            p = ro + t_lin * rd
-            y_local = p.y - APEX_Y
-            if y_local >= -CONE_H and y_local <= 0.0:
-                best_t = t_lin
-                hit_part = 1
-
-    # 圆锥底面圆盘
     if ti.abs(rd.y) > 1e-6:
-        tb = (BASE_Y - ro.y) / rd.y
-        if tb > EPS and tb < best_t:
+        tb = (CONE_BASE_Y - ro.y) / rd.y
+        if tb > EPS and tb < t_best:
             pb = ro + tb * rd
-            dx = pb.x - APEX_X
-            dz = pb.z - APEX_Z
-            if dx * dx + dz * dz <= CONE_R * CONE_R:
-                best_t = tb
+            dx = pb.x - CONE_APEX.x
+            dz = pb.z - CONE_APEX.z
+            if dx * dx + dz * dz <= CONE_RADIUS * CONE_RADIUS:
+                t_best = tb
                 hit_part = 2
 
-    return best_t, hit_part
+    return t_best, hit_part
 
 
 @ti.func
@@ -152,66 +122,127 @@ def cone_normal(p, hit_part):
     if hit_part == 2:
         n = tm.vec3(0.0, -1.0, 0.0)
     else:
-        local = p - cone_apex()
-        n = tm.vec3(local.x, -K2 * local.y, local.z).normalized()
+        local = p - CONE_APEX
+        n = normalize(tm.vec3(local.x, -CONE_K2 * local.y, local.z))
 
     return n
 
 
 @ti.func
-def offset_ray_origin(pos, normal, dir_vec):
-    new_pos = pos
-    if normal.dot(dir_vec) >= 0.0:
-        new_pos = pos + normal * SHADOW_BIAS
+def intersect_ground(ro, rd):
+    t = INF
+
+    if ti.abs(rd.y) > 1e-6:
+        tg = (GROUND_Y - ro.y) / rd.y
+        if tg > EPS:
+            t = tg
+
+    return t
+
+
+@ti.func
+def ground_color(p):
+    ix = ti.cast(ti.floor((p.x + 20.0) * 0.6), ti.i32)
+    iz = ti.cast(ti.floor((p.z + 20.0) * 0.6), ti.i32)
+
+    c = tm.vec3(0.0, 0.0, 0.0)
+    if (ix + iz) % 2 == 0:
+        c = tm.vec3(0.78, 0.78, 0.78)
     else:
-        new_pos = pos - normal * SHADOW_BIAS
-    return new_pos
+        c = tm.vec3(0.55, 0.55, 0.55)
+
+    return c
+
+
+@ti.func
+def scene_hit(ro, rd):
+    t_min = INF
+    obj_id = 0
+    cone_part = 0
+
+    t_s = intersect_sphere(ro, rd)
+    if t_s < t_min:
+        t_min = t_s
+        obj_id = 1
+
+    t_c, part = intersect_cone(ro, rd)
+    if t_c < t_min:
+        t_min = t_c
+        obj_id = 2
+        cone_part = part
+
+    t_g = intersect_ground(ro, rd)
+    if t_g < t_min:
+        t_min = t_g
+        obj_id = 3
+        cone_part = 0
+
+    return t_min, obj_id, cone_part
+
+
+# ----------------------------
+# 阴影逻辑
+# ----------------------------
+@ti.func
+def offset_ray_origin(pos, normal, direction):
+    out = pos
+    if normal.dot(direction) >= 0.0:
+        out = pos + normal * SHADOW_BIAS
+    else:
+        out = pos - normal * SHADOW_BIAS
+    return out
 
 
 @ti.func
 def is_in_shadow(pos, normal):
-    lp = light_pos()
-    to_light = lp - pos
-    light_dist = to_light.norm()
-    light_dir = to_light.normalized()
+    to_light = LIGHT - pos
+    dist = to_light.norm()
+    Ldir = normalize(to_light)
 
-    shadow_ro = offset_ray_origin(pos, normal, light_dir)
-    shadow_rd = light_dir
-
-    t_s = intersect_sphere(shadow_ro, shadow_rd)
-    t_c, _ = intersect_cone(shadow_ro, shadow_rd)
+    shadow_ro = offset_ray_origin(pos, normal, Ldir)
+    t_hit, obj_id, _ = scene_hit(shadow_ro, Ldir)
 
     blocked = 0
-    if t_s > EPS and t_s < light_dist - SHADOW_BIAS:
-        blocked = 1
-    if t_c > EPS and t_c < light_dist - SHADOW_BIAS:
+    if obj_id != 0 and t_hit > EPS and t_hit < dist - SHADOW_BIAS:
         blocked = 1
 
     return blocked
 
 
+# ----------------------------
+# 射线与着色
+# ----------------------------
 @ti.func
-def phong_shade_with_shadow(pos, normal, obj_color, ka, kd, ks, shininess):
-    light_color = tm.vec3(1.0, 1.0, 1.0)
+def screen_ray(i, j):
+    # 这里沿用老师 test.py 的构图方式，物体大小更合适
+    u = (ti.cast(i, ti.f32) - W * 0.5) / H * 2.0
+    v = (ti.cast(j, ti.f32) - H * 0.5) / H * 2.0
 
-    N = normal.normalized()
-    L = (light_pos() - pos).normalized()
-    V = (cam_pos() - pos).normalized()
+    ro = CAMERA
+    rd = normalize(tm.vec3(u, v, -1.0))
+    return ro, rd
 
-    ambient = ka * light_color * obj_color
+
+@ti.func
+def phong_shadow_shade(pos, normal, obj_color, ka, kd, ks, shininess):
+    N = normalize(normal)
+    L = normalize(LIGHT - pos)
+    V = normalize(CAMERA - pos)
+
+    ambient = ka * obj_color
     color = ambient
 
     shadow_flag = is_in_shadow(pos, N)
 
     if shadow_flag == 0:
         ndotl = ti.max(N.dot(L), 0.0)
-        diffuse = kd * ndotl * light_color * obj_color
+        diffuse = kd * ndotl * obj_color
 
         specular = tm.vec3(0.0, 0.0, 0.0)
         if ndotl > 0.0:
-            R = (2.0 * N.dot(L) * N - L).normalized()
+            R = normalize(reflect_dir(-L, N))
             spec = ti.pow(ti.max(R.dot(V), 0.0), shininess)
-            specular = ks * spec * light_color
+            specular = ks * spec * tm.vec3(1.0, 1.0, 1.0)
 
         color = ambient + diffuse + specular
 
@@ -220,73 +251,50 @@ def phong_shade_with_shadow(pos, normal, obj_color, ka, kd, ks, shininess):
 
 @ti.kernel
 def render(ka: ti.f32, kd: ti.f32, ks: ti.f32, shininess: ti.f32):
-    bg = tm.vec3(BG_R, BG_G, BG_B)
-    sphere_color = tm.vec3(SPHERE_CR, SPHERE_CG, SPHERE_CB)
-    cone_color = tm.vec3(CONE_CR, CONE_CG, CONE_CB)
-    camera = cam_pos()
-
     for i, j in pixels:
-        px = (2.0 * ((i + 0.5) / W) - 1.0) * ASPECT * VIEW_SCALE
-        py = (1.0 - 2.0 * ((j + 0.5) / H)) * VIEW_SCALE
-        image_point = tm.vec3(px, py, 0.0)
+        ro, rd = screen_ray(i, j)
+        t_hit, obj_id, cone_part = scene_hit(ro, rd)
 
-        ro = camera
-        rd = (image_point - ro).normalized()
-
-        best_t = INF
-        best_obj = 0
-        cone_part = 0
-
-        t_s = intersect_sphere(ro, rd)
-        if t_s < best_t:
-            best_t = t_s
-            best_obj = 1
-
-        t_c, hit_part = intersect_cone(ro, rd)
-        if t_c < best_t:
-            best_t = t_c
-            best_obj = 2
-            cone_part = hit_part
-
-        color = bg
-
-        if best_obj != 0:
-            hit_pos = ro + best_t * rd
-
-            if best_obj == 1:
-                N = sphere_normal(hit_pos)
-                color = phong_shade_with_shadow(hit_pos, N, sphere_color, ka, kd, ks, shininess)
+        color = BACKGROUND
+        if obj_id != 0:
+            p = ro + rd * t_hit
+            if obj_id == 1:
+                color = phong_shadow_shade(
+                    p, sphere_normal(p), SPHERE_COLOR, ka, kd, ks, shininess
+                )
+            elif obj_id == 2:
+                color = phong_shadow_shade(
+                    p, cone_normal(p, cone_part), CONE_COLOR, ka, kd, ks, shininess
+                )
             else:
-                N = cone_normal(hit_pos, cone_part)
-                color = phong_shade_with_shadow(hit_pos, N, cone_color, ka, kd, ks, shininess)
+                color = phong_shadow_shade(
+                    p, tm.vec3(0.0, 1.0, 0.0), ground_color(p), 0.08, 0.92, 0.04, 8.0
+                )
 
         pixels[i, j] = color
 
 
 def main():
-    window = ti.ui.Window("Work4 Optional 2 - Hard Shadow", (W, H), vsync=True)
+    window = ti.ui.Window("Phong + Hard Shadow", (W, H), vsync=True)
     canvas = window.get_canvas()
+    gui = window.get_gui()
 
-    ka = 0.2
-    kd = 0.7
-    ks = 0.5
+    ka = 0.18
+    kd = 0.78
+    ks = 0.36
     shininess = 32.0
 
     while window.running:
-        gui = window.get_gui()
-        with gui.sub_window("Phong + Hard Shadow", 0.02, 0.02, 0.32, 0.24):
-            gui.text("Shadowed points keep ambient term only")
+        render(ka, kd, ks, shininess)
+        canvas.set_image(pixels)
+
+        with gui.sub_window("Hard Shadow Parameters", 0.60, 0.06, 0.36, 0.24):
+            gui.text("Ground plane added for clearer shadows")
             ka = gui.slider_float("Ka", ka, 0.0, 1.0)
             kd = gui.slider_float("Kd", kd, 0.0, 1.0)
             ks = gui.slider_float("Ks", ks, 0.0, 1.0)
             shininess = gui.slider_float("Shininess", shininess, 1.0, 128.0)
-            gui.text(f"Ka = {ka:.2f}")
-            gui.text(f"Kd = {kd:.2f}")
-            gui.text(f"Ks = {ks:.2f}")
-            gui.text(f"Shininess = {shininess:.1f}")
 
-        render(ka, kd, ks, shininess)
-        canvas.set_image(pixels)
         window.show()
 
 
