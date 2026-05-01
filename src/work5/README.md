@@ -1,5 +1,7 @@
 # 计算机图形学实验五：光线追踪 Ray Tracing
 
+<br>
+
 <a id="toc"></a>
 
 <p align="center">
@@ -9,6 +11,8 @@
   <img src="https://img.shields.io/badge/Work5-Ray%20Tracing-purple?style=for-the-badge" alt="Work5">
   <img src="https://img.shields.io/badge/Status-Completed-brightgreen?style=for-the-badge" alt="Status">
 </p>
+
+<br>
 
 ## 目录
 
@@ -88,9 +92,9 @@
 </details>
 
 <details open>
-<summary><strong>七、选做内容（仅供学有余力的同学选做）</strong></summary>
+<summary><strong>七、选做内容</strong></summary>
 
-- [七、选做内容（仅供学有余力的同学选做）](#section-7)
+- [七、选做内容](#section-7)
   - [7.1 选做一：折射与玻璃材质（+15%）](#section-7-1)
     - [7.1.1 任务要求](#section-7-1-1)
     - [7.1.2 数学原理](#section-7-1-2)
@@ -186,7 +190,9 @@ python -u "src/work5/test.py"
 
 该文件主要用于运行老师参考代码或测试效果，方便观察基础场景、光照强度、物体大小和相机视角，并与自己实现的版本进行比较。
 
-![Teacher Test](../../assets/work5/teacher_test.png)
+<p align="center">
+  <img src="../../assets/work5/teacher_test.png" alt="Teacher Test" width="720">
+</p>
 
 <a id="section-3-2"></a>
 
@@ -198,7 +204,9 @@ python -u "src/work5/main.py"
 
 该版本完成实验五基础任务，包括棋盘格地面、红色漫反射球、银色镜面球、硬阴影、镜面反射和 UI 交互控制。
 
-![Ray Tracing Basic](../../assets/work5/raytracing_basic.png)
+<p align="center">
+  <img src="../../assets/work5/raytracing_basic.png" alt="Ray Tracing Basic" width="720">
+</p>
 
 <a id="section-3-3"></a>
 
@@ -210,7 +218,9 @@ python -u "src/work5/GlassRefraction.py"
 
 该版本将红色漫反射球替换为玻璃材质球，实现折射、全反射和 Fresnel 边缘反射效果。
 
-![Glass Refraction](../../assets/work5/glass_refraction.png)
+<p align="center">
+  <img src="../../assets/work5/glass_refraction.png" alt="Glass Refraction" width="720">
+</p>
 
 <a id="section-3-4"></a>
 
@@ -222,7 +232,9 @@ python -u "src/work5/AntiAliasingMSAA.py"
 
 该版本在基础光线追踪流程上增加多重采样抗锯齿，可以通过 `AA Grid` 控制每个像素内部的采样数量。
 
-![MSAA Compare](../../assets/work5/msaa_compare.gif)
+<p align="center">
+  <img src="../../assets/work5/msaa_compare.gif" alt="MSAA Compare" width="720">
+</p>
 
 <a id="section-3-5"></a>
 
@@ -595,7 +607,9 @@ intersect_scene()
 
 ### 可视化结果
 
-![Task1 Scene](../../assets/work5/task1_scene.png)
+<p align="center">
+  <img src="../../assets/work5/task1_scene.png" alt="Task1 Scene" width="720">
+</p>
 
 图中可以看到实验要求的三个几何体：下方为无限大棋盘格平面，左侧为红色漫反射球，右侧为银色镜面球。所有物体均由程序中的数学方程直接定义，没有导入外部模型。
 
@@ -680,7 +694,9 @@ for bounce in range(MAX_BOUNCES_LIMIT):
 
 ### 可视化结果
 
-![Task2 Max Bounces](../../assets/work5/task2_max_bounces.gif)
+<p align="center">
+  <img src="../../assets/work5/task2_max_bounces.gif" alt="Task2 Max Bounces" width="720">
+</p>
 
 该动图展示了 `Max Bounces` 从 1 增加到 5 的过程。当弹射次数较小时，镜面球中的反射内容不明显；当弹射次数增加后，镜面球可以反射棋盘格地面、天空背景和场景物体，说明反射光线被继续追踪。
 
@@ -733,7 +749,9 @@ if hit == 1 and t < light_distance - EPS:
 
 ### 可视化结果
 
-![Task3 Hard Shadow](../../assets/work5/task3_hard_shadow.png)
+<p align="center">
+  <img src="../../assets/work5/task3_hard_shadow.png" alt="Task3 Hard Shadow" width="720">
+</p>
 
 图中可以看到红色球和银色球在棋盘格地面上产生了清晰的硬阴影。阴影边界较锐利，这是因为本实验使用的是点光源。程序中对 shadow ray 起点进行了 `EPS` 偏移，因此画面中没有出现由自相交导致的大面积黑色噪点。
 
@@ -793,19 +811,49 @@ gui.end()
 
 ### 可视化结果
 
-![Task4 UI](../../assets/work5/task4_ui.gif)
+#### （1）调节 Light X 的交互效果
 
-该动图展示了通过 UI 面板实时调节光源位置和最大弹射次数的过程。拖动 `Light X / Light Y / Light Z` 时，地面阴影会随光源位置变化；调节 `Max Bounces` 时，镜面球中的反射内容会发生明显变化。
+<p align="center">
+  <img src="../../assets/work5/task4_ui_x.gif" alt="Task4 UI X" width="720">
+</p>
+
+该动图展示了拖动 `Light X` 时场景的变化过程。随着光源在 x 方向上左右移动，地面阴影的方向和位置会实时变化，能够直观看到光照方向改变对阴影投射结果的影响。
+
+#### （2）调节 Light Y 的交互效果
+
+<p align="center">
+  <img src="../../assets/work5/task4_ui_y.gif" alt="Task4 UI Y" width="720">
+</p>
+
+该动图展示了拖动 `Light Y` 时场景的变化过程。随着光源高度发生变化，阴影的长度和明暗关系会明显改变。光源越低，阴影通常越长；光源越高，阴影则更短、更集中。
+
+#### （3）调节 Light Z 的交互效果
+
+<p align="center">
+  <img src="../../assets/work5/task4_ui_z.gif" alt="Task4 UI Z" width="720">
+</p>
+
+该动图展示了拖动 `Light Z` 时场景的变化过程。随着光源在 z 方向前后移动，球体和地面上阴影的落点会发生偏移，同时镜面球中的高光和反射区域也会出现对应变化。
+
+#### （4）调节 Max Bounces 的交互效果
+
+<p align="center">
+  <img src="../../assets/work5/task4_ui.gif" alt="Task4 UI Bounces" width="720">
+</p>
+
+该动图展示了拖动 `Max Bounces` 时场景的变化过程。随着最大弹射次数从较小值逐渐增大，镜面球中的反射内容会更加丰富，说明反射光线被继续追踪，镜中环境信息也更加完整。
 
 <p align="right"><a href="#toc">回到目录 ↑</a></p>
 
 <a id="section-7"></a>
 
-## 七、选做内容（仅供学有余力的同学选做）
+## 七、选做内容
 
 下图为老师在实验文档中给出的选做内容说明。
 
-![Optional Tasks](../../assets/work5/optional_tasks.png)
+<p align="center">
+  <img src="../../assets/work5/optional_tasks.png" alt="Optional Tasks" width="720">
+</p>
 
 本实验进一步完成了两个选做内容，分别是 **折射与玻璃材质** 和 **抗锯齿（MSAA）**。下面按照实验要求分别说明实现思路与结果。
 
@@ -936,19 +984,25 @@ trace_ray()
 
 #### （1）玻璃折射整体效果
 
-![Glass Refraction](../../assets/work5/glass_refraction.png)
+<p align="center">
+  <img src="../../assets/work5/glass_refraction.png" alt="Glass Refraction" width="720">
+</p>
 
 图中左侧球体已经由红色漫反射球替换为玻璃球。可以看到球体具有透明感，背景中的棋盘格和环境会在球体内部发生一定的折射变形。
 
 #### （2）玻璃材质弹射次数变化
 
-![Glass Bounces](../../assets/work5/glass_bounces.gif)
+<p align="center">
+  <img src="../../assets/work5/glass_bounces.gif" alt="Glass Bounces" width="720">
+</p>
 
 该动图展示了 `Max Bounces` 增大时玻璃材质的变化过程。随着最大弹射次数增加，折射路径更加完整，玻璃球的透明感和内部光线路径更加明显。
 
 #### （3）全反射或边缘高光效果
 
-![Glass Highlight](../../assets/work5/glass_highlight.png)
+<p align="center">
+  <img src="../../assets/work5/glass_highlight.png" alt="Glass Highlight" width="720">
+</p>
 
 该图展示玻璃球边缘区域更强的反射效果。由于 Fresnel 近似的引入，球体边缘区域会出现更亮的高光和反射边界，使玻璃材质看起来更加自然。
 
@@ -1034,27 +1088,44 @@ trace_ray()
 
 #### （1）MSAA 动态对比
 
-![MSAA Compare](../../assets/work5/msaa_compare.gif)
+<p align="center">
+  <img src="../../assets/work5/msaa_compare.gif" alt="MSAA Compare" width="720">
+</p>
 
 该动图展示了 `AA Grid` 从 1 提升到 3 的过程。可以看到球体轮廓、棋盘格边界和阴影边缘逐渐由锯齿状变得平滑。
 
 #### （2）单采样结果
 
-![AA Grid 1](../../assets/work5/aa_grid_1.png)
+<p align="center">
+  <img src="../../assets/work5/aa_grid_1.png" alt="AA Grid 1" width="720">
+</p>
 
 在 `AA Grid = 1` 时，每个像素仅发射一条主光线。此时画面中的物体边缘存在较明显的台阶状锯齿，尤其在球体外轮廓处更加明显。
 
 #### （3）多采样结果
 
-![AA Grid 3](../../assets/work5/aa_grid_3.png)
+<p align="center">
+  <img src="../../assets/work5/aa_grid_3.png" alt="AA Grid 3" width="720">
+</p>
 
 在 `AA Grid = 3` 时，每个像素内部发射 $3 \times 3 = 9$ 条主光线。与单采样相比，球体边缘和棋盘格边界更加平滑，整体观感明显提升。
 
 #### （4）局部边缘放大对比
 
-| 单采样边缘 | MSAA 边缘 |
-| --- | --- |
-| ![Edge Zoom No AA](../../assets/work5/edge_zoom_noaa.png) | ![Edge Zoom MSAA](../../assets/work5/edge_zoom_msaa.png) |
+<table align="center">
+  <tr>
+    <td align="center"><strong>单采样边缘</strong></td>
+    <td align="center"><strong>MSAA 边缘</strong></td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="../../assets/work5/edge_zoom_noaa.png" alt="Edge Zoom No AA" width="420">
+    </td>
+    <td align="center">
+      <img src="../../assets/work5/edge_zoom_msaa.png" alt="Edge Zoom MSAA" width="420">
+    </td>
+  </tr>
+</table>
 
 该组图对边缘局部进行了放大。可以明显看到，MSAA 通过对同一像素内部多个子采样结果求平均，使边缘附近像素形成更自然的灰度过渡，而不是突兀的锯齿跳变。
 
