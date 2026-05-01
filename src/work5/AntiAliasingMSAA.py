@@ -2,14 +2,15 @@ import taichi as ti
 
 ti.init(arch=ti.gpu)
 
-WIDTH = 960
-HEIGHT = 540
+# debug解决一下效果不明显的问题：640 × 360：锯齿会更明显，AA 前后差异更容易看出来
+WIDTH = 640
+HEIGHT = 360
 
 INF = 1e10
 EPS = 1e-4
 
 MAX_BOUNCES_LIMIT = 5
-AA_GRID_LIMIT = 3
+AA_GRID_LIMIT = 5
 
 pixels = ti.Vector.field(3, dtype=ti.f32, shape=(WIDTH, HEIGHT))
 
@@ -343,29 +344,25 @@ def main():
     light_z = 3.0
 
     max_bounces = 3
-    aa_grid = 2
+    aa_grid = 1
 
     while window.running:
         if window.is_pressed(ti.ui.ESCAPE):
             break
 
-        gui.begin("Controls", 0.02, 0.02, 0.33, 0.34)
+        gui.begin("Controls", 0.02, 0.02, 0.38, 0.56)
 
         gui.text("Optional 2: MSAA Anti-Aliasing")
-        gui.text("AA Grid 1 = normal")
-        gui.text("AA Grid 2 = 4 samples")
-        gui.text("AA Grid 3 = 9 samples")
+        gui.text("AA Grid 1 = 1 sample / pixel")
+        gui.text("AA Grid 2 = 4 samples / pixel")
+        gui.text("AA Grid 3 = 9 samples / pixel")
+        gui.text("AA Grid 4 = 16 samples / pixel")
+        gui.text("AA Grid 5 = 25 samples / pixel")
+        gui.text(" ")
 
         light_x = gui.slider_float("Light X", light_x, -6.0, 6.0)
         light_y = gui.slider_float("Light Y", light_y, 0.5, 8.0)
         light_z = gui.slider_float("Light Z", light_z, -6.0, 6.0)
-
-        max_bounces_float = gui.slider_float(
-            "Max Bounces",
-            float(max_bounces),
-            1.0,
-            float(MAX_BOUNCES_LIMIT)
-        )
 
         aa_grid_float = gui.slider_float(
             "AA Grid",
@@ -374,8 +371,30 @@ def main():
             float(AA_GRID_LIMIT)
         )
 
-        max_bounces = int(max_bounces_float + 0.5)
         aa_grid = int(aa_grid_float + 0.5)
+
+        if aa_grid < 1:
+            aa_grid = 1
+        if aa_grid > AA_GRID_LIMIT:
+            aa_grid = AA_GRID_LIMIT
+
+        max_bounces_float = gui.slider_float(
+            "Max Bounces",
+            float(max_bounces),
+            1.0,
+            float(MAX_BOUNCES_LIMIT)
+        )
+
+        max_bounces = int(max_bounces_float + 0.5)
+
+        if max_bounces < 1:
+            max_bounces = 1
+        if max_bounces > MAX_BOUNCES_LIMIT:
+            max_bounces = MAX_BOUNCES_LIMIT
+
+        sample_count = aa_grid * aa_grid
+        gui.text(f"Current AA Grid: {aa_grid}")
+        gui.text(f"Samples per pixel: {sample_count}")
 
         gui.end()
 

@@ -25,14 +25,20 @@ CG-Lab/
 │       ├── task1_scene.png           # 任务 1：基础三维场景，展示棋盘格地面、红球和镜面球
 │       ├── task2_max_bounces.gif     # 任务 2：最大弹射次数变化，展示镜面反射逐渐增强
 │       ├── task3_hard_shadow.png     # 任务 3：硬阴影结果，展示 shadow ray 遮挡判断
-│       ├── task4_ui.gif              # 任务 4：UI 交互效果，展示光源移动和弹射次数调整
+│       ├── task4_ui_x.gif            # 任务 4：调节 Light X 的 UI 交互效果
+│       ├── task4_ui_y.gif            # 任务 4：调节 Light Y 的 UI 交互效果
+│       ├── task4_ui_z.gif            # 任务 4：调节 Light Z 的 UI 交互效果
+│       ├── task4_ui.gif              # 任务 4：调节 Max Bounces 的 UI 交互效果
 │       ├── raytracing_basic.png      # 基础光线追踪最终效果图
 │       ├── glass_refraction.png      # 选做一：玻璃折射整体效果
-│       ├── glass_bounces.gif         # 选做一：玻璃材质弹射次数变化
+│       ├── glass_bounces_x.gif       # 选做一：调节 Light X 时玻璃折射效果变化
+│       ├── glass_bounces_y.gif       # 选做一：调节 Light Y 时玻璃折射效果变化
+│       ├── glass_bounces_z.gif       # 选做一：调节 Light Z 时玻璃折射效果变化
+│       ├── glass_bounces.gif         # 选做一：调节弹射次数时玻璃透明感与折射效果变化
 │       ├── glass_highlight.png       # 选做一：玻璃边缘高光与 Fresnel 效果
 │       ├── msaa_compare.gif          # 选做二：MSAA 动态对比
 │       ├── aa_grid_1.png             # 选做二：AA Grid = 1，单采样结果
-│       ├── aa_grid_3.png             # 选做二：AA Grid = 3，多采样结果
+│       ├── aa_grid_5.png             # 选做二：AA Grid = 5，多采样结果
 │       ├── edge_zoom_noaa.png        # 选做二：未开启 MSAA 的边缘局部放大
 │       └── edge_zoom_msaa.png        # 选做二：开启 MSAA 后的边缘局部放大
 │
@@ -271,7 +277,6 @@ phong_shading()
 ```
 
 ### 5.6 硬阴影
-
 
 对于已经命中的表面点 `P`，程序从该点向光源位置 `L_pos` 发射阴影射线：
 
@@ -595,9 +600,29 @@ gui.end()
 
 ### 可视化结果
 
-![Task4 UI](../../assets/work5/task4_ui.gif)
+#### （1）调节 Light X 的交互效果
 
-该动图展示了通过 UI 面板实时调节光源位置和最大弹射次数的过程。拖动 `Light X / Light Y / Light Z` 时，地面阴影会随光源位置变化；调节 `Max Bounces` 时，镜面球中的反射内容会发生明显变化。
+![Task4 UI X](../../assets/work5/task4_ui_x.gif)
+
+该动图展示了拖动 `Light X` 时场景的变化过程。随着光源在 x 方向上左右移动，地面阴影的方向和位置会实时变化，能够直观看到光照方向改变对阴影投射结果的影响。
+
+#### （2）调节 Light Y 的交互效果
+
+![Task4 UI Y](../../assets/work5/task4_ui_y.gif)
+
+该动图展示了拖动 `Light Y` 时场景的变化过程。随着光源高度发生变化，阴影的长度和明暗关系会明显改变。光源越低，阴影通常越长；光源越高，阴影则更短、更集中。
+
+#### （3）调节 Light Z 的交互效果
+
+![Task4 UI Z](../../assets/work5/task4_ui_z.gif)
+
+该动图展示了拖动 `Light Z` 时场景的变化过程。随着光源在 z 方向前后移动，球体和地面上阴影的落点会发生偏移，同时镜面球中的高光和反射区域也会出现对应变化。
+
+#### （4）调节 Max Bounces 的交互效果
+
+![Task4 UI Bounces](../../assets/work5/task4_ui.gif)
+
+该动图展示了拖动 `Max Bounces` 时场景的变化过程。随着最大弹射次数从较小值逐渐增大，镜面球中的反射内容会更加丰富，说明反射光线被继续追踪，镜中环境信息也更加完整。
 
 ## 七、选做内容（仅供学有余力的同学选做）
 
@@ -728,13 +753,31 @@ trace_ray()
 
 图中左侧球体已经由红色漫反射球替换为玻璃球。可以看到球体具有透明感，背景中的棋盘格和环境会在球体内部发生一定的折射变形。
 
-#### （2）玻璃材质弹射次数变化
+#### （2）调节 Light X 时的玻璃折射效果
+
+![Glass Bounces X](../../assets/work5/glass_bounces_x.gif)
+
+该动图展示了拖动 `Light X` 时玻璃场景的变化过程。随着光源在 x 方向移动，玻璃球表面的高光位置、地面阴影方向以及球体内部折射后的亮暗分布都会发生变化。
+
+#### （3）调节 Light Y 时的玻璃折射效果
+
+![Glass Bounces Y](../../assets/work5/glass_bounces_y.gif)
+
+该动图展示了拖动 `Light Y` 时玻璃场景的变化过程。随着光源高度变化，玻璃球表面的亮斑强度、阴影长度以及折射区域的层次感会发生明显变化。
+
+#### （4）调节 Light Z 时的玻璃折射效果
+
+![Glass Bounces Z](../../assets/work5/glass_bounces_z.gif)
+
+该动图展示了拖动 `Light Z` 时玻璃场景的变化过程。随着光源在 z 方向前后移动，玻璃球中的折射内容与镜面球中的反射区域都会同步变化，体现了光源位置对整体视觉效果的影响。
+
+#### （5）弹射次数与玻璃透明感、折射效果变化
 
 ![Glass Bounces](../../assets/work5/glass_bounces.gif)
 
-该动图展示了 `Max Bounces` 增大时玻璃材质的变化过程。随着最大弹射次数增加，折射路径更加完整，玻璃球的透明感和内部光线路径更加明显。
+该动图展示了 `Max Bounces` 增大时玻璃材质的变化过程。随着最大弹射次数增加，折射路径更加完整，玻璃球的透明感、内部光线路径以及折射效果都更加明显。
 
-#### （3）全反射或边缘高光效果
+#### （6）全反射或边缘高光效果
 
 ![Glass Highlight](../../assets/work5/glass_highlight.png)
 
@@ -777,11 +820,12 @@ $$
 N=m^2
 $$
 
-例如：
 
 - 当 `AA Grid = 1` 时，`N = 1`；
 - 当 `AA Grid = 2` 时，`N = 4`；
-- 当 `AA Grid = 3` 时，`N = 9`。
+- 当 `AA Grid = 3` 时，`N = 9`；
+- 当 `AA Grid = 4` 时，`N = 16`；
+- 当 `AA Grid = 5` 时，`N = 25`。
 
 采样点分布在像素内部不同的子区域中，因此边缘附近的像素不再只是“命中”或“未命中”的二元结果，而是多个子采样结果的平均值，从而产生更平滑的视觉过渡。
 
@@ -812,7 +856,7 @@ trace_ray()
 
 ![MSAA Compare](../../assets/work5/msaa_compare.gif)
 
-该动图展示了 `AA Grid` 从 1 提升到 3 的过程。可以看到球体轮廓、棋盘格边界和阴影边缘逐渐由锯齿状变得平滑。
+该动图展示了 `AA Grid` 从 1 提升到 5 的过程。可以看到球体轮廓、棋盘格边界和阴影边缘逐渐由锯齿状变得平滑。
 
 #### （2）单采样结果
 
@@ -822,9 +866,9 @@ trace_ray()
 
 #### （3）多采样结果
 
-![AA Grid 3](../../assets/work5/aa_grid_3.png)
+![AA Grid 3](../../assets/work5/aa_grid_5.png)
 
-在 `AA Grid = 3` 时，每个像素内部发射 `3 × 3 = 9` 条主光线。与单采样相比，球体边缘和棋盘格边界更加平滑，整体观感明显提升。
+在 `AA Grid = 5` 时，每个像素内部发射 `5 × 5 = 25` 条主光线。与单采样相比，球体边缘和棋盘格边界更加平滑，整体观感明显提升。
 
 #### （4）局部边缘放大对比
 
@@ -832,7 +876,7 @@ trace_ray()
 | --- | --- |
 | ![Edge Zoom No AA](../../assets/work5/edge_zoom_noaa.png) | ![Edge Zoom MSAA](../../assets/work5/edge_zoom_msaa.png) |
 
-该组图对边缘局部进行了放大。可以明显看到，MSAA 通过对同一像素内部多个子采样结果求平均，使边缘附近像素形成更自然的灰度过渡，而不是突兀的锯齿跳变。
+该组图对边缘局部进行了放大。可以明显看到，MSAA 通过对同一像素内部多个子采样结果求平均，使边缘附近像素形成更自然的灰度过渡，而不是突兀的锯齿跳变。MSAA 主要改善的是物体轮廓、棋盘格边界和阴影边缘等高频区域，因此在整张图中的变化不一定十分夸张。为了更直观地展示抗锯齿效果，我就额外截取了球体边缘的局部放大图进行对比。
 
 ### 7.2.5 本部分小结
 
