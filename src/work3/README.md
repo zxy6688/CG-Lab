@@ -1,577 +1,766 @@
-# Work3 - Bezier Curve
+# 计算机图形学实验三：贝塞尔曲线 Bezier Curve
 
-计算机图形学实验三：**贝塞尔曲线（Bezier Curve）**
+<br>
 
-本实验基于 **Python + Taichi** 完成，围绕老师布置的贝塞尔曲线实验要求，依次实现了：
-1. 必做部分：交互式贝塞尔曲线绘制
-2. 选做一：反走样贝塞尔曲线
-3. 选做二：均匀三次 B 样条曲线对比展示
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.13-blue?style=for-the-badge&logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/Taichi-1.7.4-orange?style=for-the-badge" alt="Taichi">
+  <img src="https://img.shields.io/badge/Backend-Vulkan-green?style=for-the-badge" alt="Backend">
+  <img src="https://img.shields.io/badge/Work3-Bezier%20Curve-purple?style=for-the-badge" alt="Work3">
+  <img src="https://img.shields.io/badge/Status-Completed-brightgreen?style=for-the-badge" alt="Status">
+</p>
 
-本 README 将重点放在以下内容上：
-- 当前实验文件结构与每个文件的职责，每一个实现如何对应老师布置的实验任务
-- 贝塞尔曲线、De Casteljau 算法、光栅化、反走样、B 样条的核心原理
-- 代码中真正关键的实现细节与数据流
-- 可视化效果与 GIF 展示位置
-- 如何运行、如何交互
+<br>
 
-## 一、文件结构
+<a id="toc"></a>
 
-当前 `src/Work3/` 目录建议包含如下文件：
+## 目录
 
-    Work3/
-    ├── bezier_curve.py
-    ├── bezier_curve_antialias.py
-    ├── bspline_curve_compare.py
-    ├── test.py
-    └── README.md
+<details open>
+<summary><strong>一、本次实验任务与收获</strong></summary>
 
-其中各文件职责如下：
+- [一、本次实验任务与收获](#section-1)
 
-- `bezier_curve.py`
-  - 必做实验主程序
-  - 严格按照老师给出的任务要求实现标准贝塞尔曲线绘制
-  - 包含控制点输入、控制折线显示、De Casteljau 曲线采样、GPU 光栅化等核心流程
+</details>
 
-- `bezier_curve_antialias.py`
-  - 选做一：反走样版本
-  - 在基础贝塞尔曲线绘制的基础上，改进像素渲染逻辑
-  - 通过局部像素邻域的距离加权，让曲线边缘更加平滑
+<details open>
+<summary><strong>二、文件结构</strong></summary>
 
-- `bspline_curve_compare.py`
-  - 选做二：Bezier 与 B-Spline 的对比版本
-  - 在同一组控制点下，同时绘制贝塞尔曲线与均匀三次 B 样条曲线
-  - 便于观察两类曲线在几何行为上的差异，尤其是“全局控制”和“局部控制”的区别
+- [二、文件结构](#section-2)
 
-- `test.py`
-  - 作为课程实验结构的一部分，尝试老师的代码的和我的代码有什么不同
+</details>
 
-- `README.md`
-  - 当前实验说明文档，对实验目标、实现过程、代码结构、原理说明和可视化展示进行系统整理
+<details open>
+<summary><strong>三、运行方式</strong></summary>
 
-## 二、可视化展示
+- [三、运行方式](#section-3)
+  - [3.1 老师参考代码测试版](#section-3-1)
+  - [3.2 必做版：基础贝塞尔曲线](#section-3-2)
+  - [3.3 选做一：反走样贝塞尔曲线](#section-3-3)
+  - [3.4 选做二：Bezier 与 B-Spline 对比](#section-3-4)
+  - [3.5 使用 uv 运行](#section-3-5)
 
-本实验将所有图片和 GIF 资源统一保存在仓库根目录下的：
+</details>
 
-    assets/work3/
+<details open>
+<summary><strong>四、实验目标</strong></summary>
 
-即：
+- [四、实验目标](#section-4)
+  - [4.1 理解贝塞尔曲线的几何意义](#section-4-1)
+  - [4.2 实现 De Casteljau 算法](#section-4-2)
+  - [4.3 掌握像素缓冲区与光栅化思想](#section-4-3)
+  - [4.4 理解图形界面交互与 CPU/GPU 分工](#section-4-4)
 
-    assets/work3/demo_basic.gif
-    assets/work3/demo_antialias.gif
-    assets/work3/demo_bspline_compare.gif
+</details>
 
+<details open>
+<summary><strong>五、实验原理</strong></summary>
 
-### 1. 必做实验演示图
+- [五、实验原理](#section-5)
+  - [5.1 贝塞尔曲线表示](#section-5-1)
+  - [5.2 De Casteljau 算法](#section-5-2)
+  - [5.3 光栅化与像素映射](#section-5-3)
+  - [5.4 CPU/GPU 批量数据传输](#section-5-4)
+  - [5.5 反走样基本思想](#section-5-5)
+  - [5.6 均匀三次 B 样条曲线](#section-5-6)
 
-<table>
-  <tr>
-    <td align="center" width="50%">
-      <img src="../../assets/work3/demo_basic.gif" width="100%" alt="Basic Bezier Demo">
-      <p><strong>动态演示图</strong></p>
-    </td>
-    <td align="center" width="50%">
-      <img src="../../assets/work3/demo_basic.png" width="100%" alt="Basic Bezier Terminal Output">
-      <p><strong>终端输出说明图</strong></p>
-    </td>
-  </tr>
-</table>
+</details>
 
+<details open>
+<summary><strong>六、基础任务实现</strong></summary>
 
-- 启动程序
-- 鼠标左键连续添加多个控制点
-- 显示控制点、控制折线和绿色贝塞尔曲线
-- 最后按 `C` 清空画布
+- [六、基础任务实现](#section-6)
+  - [任务 1：初始化与显存预分配](#section-6-1)
+    - [任务要求](#section-6-1-1)
+    - [实现方式](#section-6-1-2)
+  - [任务 2：实现 De Casteljau 算法](#section-6-2)
+    - [任务要求](#section-6-2-1)
+    - [实现方式](#section-6-2-2)
+  - [任务 3：编写 GPU 绘制内核](#section-6-3)
+    - [任务要求](#section-6-3-1)
+    - [实现方式](#section-6-3-2)
+  - [任务 4：主循环、曲线逻辑与交互响应](#section-6-4)
+    - [任务要求](#section-6-4-1)
+    - [实现方式](#section-6-4-2)
+  - [任务 5：绘制交互控制点](#section-6-5)
+    - [任务要求](#section-6-5-1)
+    - [实现方式](#section-6-5-2)
+  - [基础任务可视化结果](#section-6-6)
 
-### 2. 选做一：反走样演示图
+</details>
 
-<table>
-  <tr>
-    <td align="center" width="50%">
-      <img src="../../assets/work3/demo_antialias.gif" width="100%" alt="Anti-Aliasing Demo">
-      <p><strong>动态演示图</strong></p>
-    </td>
-    <td align="center" width="50%">
-      <img src="../../assets/work3/demo_antialias.png" width="100%" alt="Anti-Aliasing Terminal Output">
-      <p><strong>终端输出说明图</strong></p>
-    </td>
-  </tr>
-</table>
+<details open>
+<summary><strong>七、选做内容</strong></summary>
 
-- 添加若干控制点
-- 显示普通渲染与反走样渲染的效果差异
-- 演示曲线边缘更加平滑的视觉效果
+- [七、选做内容](#section-7)
+  - [7.1 选做一：反走样贝塞尔曲线](#section-7-1)
+    - [7.1.1 任务要求](#section-7-1-1)
+    - [7.1.2 数学原理](#section-7-1-2)
+    - [7.1.3 实现思路](#section-7-1-3)
+    - [7.1.4 可视化结果](#section-7-1-4)
+    - [7.1.5 本部分小结](#section-7-1-5)
+  - [7.2 选做二：Bezier 与 B-Spline 对比](#section-7-2)
+    - [7.2.1 任务要求](#section-7-2-1)
+    - [7.2.2 数学原理](#section-7-2-2)
+    - [7.2.3 实现思路](#section-7-2-3)
+    - [7.2.4 可视化结果](#section-7-2-4)
+    - [7.2.5 本部分小结](#section-7-2-5)
 
+</details>
 
-### 3. 选做二：Bezier 与 B-Spline 对比演示图
+<details open>
+<summary><strong>八、实验总结</strong></summary>
 
-<table>
-  <tr>
-    <td align="center" width="50%">
-      <img src="../../assets/work3/demo_bspline_compare.gif" width="100%" alt="Bezier vs B-Spline Demo">
-      <p><strong>动态演示图</strong></p>
-    </td>
-    <td align="center" width="50%">
-      <img src="../../assets/work3/demo_bspline_compare.png" width="100%" alt="Bezier vs B-Spline Terminal Output">
-      <p><strong>终端输出说明图</strong></p>
-    </td>
-  </tr>
-</table>
+- [八、实验总结](#section-8)
 
-- 添加超过 4 个控制点
-- 同屏显示 Bezier 曲线与 B-Spline 曲线
-- 观察两者形态差异
-- 切换不同显示模式进行比较
-## 三、实验目标
+</details>
 
-本实验围绕给出的任务说明，目标包括：
+## 效果图目录
 
-- 理解贝塞尔曲线的几何意义
-- 理解并实现 De Casteljau 算法
-- 掌握像素缓冲区的基本概念与直接光栅化思想
-- 掌握图形界面中的鼠标点击与键盘输入处理
-- CPU 与 GPU 的职责分离以及批量数据传输的重要性
-- 在基础版本上进一步探索反走样与 B 样条曲线这两个扩展方向
+| 展示内容 | 动态演示 | 终端输出说明图 |
+| --- | --- | --- |
+| 基础贝塞尔曲线 | [查看动态演示](#section-6-6) | [查看终端输出说明图](#section-6-6) |
+| 反走样贝塞尔曲线 | [查看动态演示](#section-7-1-4) | [查看终端输出说明图](#section-7-1-4) |
+| Bezier 与 B-Spline 对比 | [查看动态演示](#section-7-2-4) | [查看终端输出说明图](#section-7-2-4) |
 
-## 四、本实验代码是如何实现各项任务
+<a id="section-1"></a>
 
-这一部分直接对应给出的实验任务，说明本实验是如何一项一项完成的。
+## 一、本次实验任务与收获
 
-### 任务 1：初始化与显存预分配
+本次实验围绕 **贝塞尔曲线绘制与交互式光栅化** 展开，主要完成了三个层次的内容。
 
-任务要求：
-- `ti.init(arch=ti.gpu)`
-- 屏幕尺寸 `800 x 800`
-- 曲线采样数 `NUM_SEGMENTS = 1000`
-- 最大控制点数 `MAX_CONTROL_POINTS = 100`
-- 分配 `pixels`、`curve_points_field`、`gui_points` 三大 GPU 缓冲区
+**第一项任务是完成基础贝塞尔曲线绘制系统，对应 `bezier_curve.py`。** 程序基于 Python + Taichi 实现了鼠标添加控制点、灰色控制折线显示、绿色贝塞尔曲线绘制以及按 `C` 清空画布等功能。曲线上的采样点由 CPU 端通过 De Casteljau 算法计算，再批量传输到 GPU Field 中进行像素绘制。
 
-本实验实现：
-- 在 `bezier_curve.py` 中使用 `ti.init(arch=ti.gpu)` 初始化 GPU 后端
-- 定义了固定屏幕尺寸与控制点上限
-- 创建了像素缓冲区 `pixels`
-- 创建了曲线采样点缓冲区 `curve_points_field`
-- 创建了控制点对象池 `gui_points`
-- 额外增加了 `gui_indices`，用于绘制控制折线的索引池，使控制多边形显示更加稳定
+**第二项任务是完成反走样贝塞尔曲线，对应 `bezier_curve_antialias.py`。** 基础版本只会把曲线采样点映射到单个像素上，容易产生明显锯齿。反走样版本在光栅化阶段加入局部像素邻域的距离加权，让曲线边缘从硬跳变变成更平滑的过渡。
 
-这一步的重点是：**所有核心显存对象都在程序开始时预先分配**，避免主循环中频繁动态申请内存。
+**第三项任务是完成 Bezier 与 B-Spline 曲线对比，对应 `bspline_curve_compare.py`。** 该版本在同一组控制点下同时绘制贝塞尔曲线和均匀三次 B 样条曲线，用不同颜色区分两类曲线，便于观察贝塞尔曲线的全局控制特性和 B 样条曲线的局部控制特性。
 
-### 任务 2：实现 De Casteljau 算法
+此外，`test.py` 用于运行老师参考代码或测试版本，方便对比课程示例与本实验实现之间在交互方式、画面组织和曲线绘制效果上的差异。
 
-任务要求编写纯 Python 函数 `de_casteljau(points, t)`
+<p align="right"><a href="#toc">回到目录 ↑</a></p>
 
-本实验实现了：
-- 在基础版和两个扩展版中都实现了 `de_casteljau(points, t)` 函数
-- 输入为控制点列表与参数 `t`
-- 输出为贝塞尔曲线在参数 `t` 处的二维点坐标
-- 采用递归线性插值的方式完成计算
+<a id="section-2"></a>
 
-这一部分直接对应老师给出的数学原理，是曲线采样的核心。
+## 二、文件结构
 
-### 任务 3：编写 GPU 绘制内核
+```text
+CG-Lab/
+├── assets/
+│   └── work3/
+│       ├── demo_basic.gif              # 必做版动态演示：添加控制点、绘制控制折线与贝塞尔曲线、按 C 清空
+│       ├── demo_basic.png              # 必做版终端输出说明图
+│       ├── demo_antialias.gif          # 选做一动态演示：普通渲染与反走样渲染效果对比
+│       ├── demo_antialias.png          # 选做一终端输出说明图
+│       ├── demo_bspline_compare.gif    # 选做二动态演示：Bezier 与 B-Spline 曲线对比
+│       └── demo_bspline_compare.png    # 选做二终端输出说明图
+│
+├── src/
+│   └── work3/
+│       ├── bezier_curve.py             # 必做版：标准贝塞尔曲线绘制、控制点交互、GPU 光栅化
+│       ├── bezier_curve_antialias.py   # 选做一：局部像素邻域距离加权，实现反走样曲线
+│       ├── bspline_curve_compare.py    # 选做二：同屏绘制 Bezier 与均匀三次 B-Spline 曲线
+│       ├── test.py                     # 老师参考代码测试版，用于与本实验实现进行对比
+│       └── README.md                   # 实验说明文档
+```
 
-任务要求：
-- 编写 `draw_curve_kernel(n: ti.i32)`
-- 从 `curve_points_field` 中读取浮点坐标
-- 映射到整数像素索引
-- 在 `pixels` 中点亮绿色像素
-- 做越界检查
+<p align="right"><a href="#toc">回到目录 ↑</a></p>
 
-本实验实现了：
-- 在 `bezier_curve.py` 中实现了 `draw_curve_kernel(n: ti.i32)`
-- kernel 内部遍历曲线点缓冲区
-- 将 `[0,1]` 范围的归一化坐标映射为屏幕像素坐标
-- 使用越界判断保证只访问合法像素位置
-- 将对应像素着色为绿色
+<a id="section-3"></a>
 
-注意这里的重点不是“会不会画点”，而是：**绘制发生在 GPU Kernel 中，而不是在 Python 循环中逐像素跨界写显存**。
+## 三、运行方式
 
-### 任务 4：主循环、曲线逻辑与交互响应
+在项目根目录下运行。
 
-任务要求：
-- 创建窗口 `window = ti.ui.Window(...)`
-- 在 `while window.running:` 中处理交互
-- 鼠标左键添加控制点
-- 键盘 `C` 清空
-- 当控制点数不少于 2 时：
-  - CPU 端循环计算所有曲线点
-  - 使用 `from_numpy` 批量传给 GPU
-  - 调用 kernel 绘制
-  - 使用 `canvas.set_image(pixels)` 显示
+<a id="section-3-1"></a>
 
-本实验实现：
-- 在主循环中监听鼠标左键与键盘事件
-- 鼠标左键点击后把当前坐标加入控制点列表
-- 按下 `C` 键后清空控制点列表
-- 当控制点数量大于等于 2 时：
-  - 在 CPU 端逐个参数采样曲线点
-  - 将采样结果存入 NumPy 数组
-  - 使用 `curve_points_field.from_numpy(...)` 一次性传输到 GPU
-  - 调用 `draw_curve_kernel(...)` 批量光栅化
-  - 最终使用 `canvas.set_image(pixels)` 显示图像
+### 3.1 老师参考代码测试版
 
-这一步完整体现了强调的 **Batching 思路**：
-- CPU 负责数学计算
-- GPU 负责批量绘制
-- 两者之间通过一次性数据传输衔接
+```bash
+python -u "src/work3/test.py"
+```
 
-### 任务 5：对象池技巧绘制控制点
+该文件用于运行老师参考代码或测试版本，方便观察课程示例中的基础交互方式，并与自己的实现进行对比。
 
-实验要求：
-- `canvas.circles()` 只能接收定长 Field
-- 建议创建固定长度 NumPy 数组
-- 先全部填成屏幕外坐标，再覆盖前面若干真实控制点
+<a id="section-3-2"></a>
 
-本实验实现：
-- 创建固定长度的 `gui_points`
-- 每一帧使用 NumPy 生成一个长度为 `MAX_CONTROL_POINTS` 的数组
-- 初始全部填充为 `-10.0`
-- 再把真实控制点写入前若干位置
-- 最后上传给 `gui_points` 并调用 `canvas.circles(...)` 绘制
+### 3.2 必做版：基础贝塞尔曲线
 
-此外，控制折线也采用类似的固定大小索引池 `gui_indices`，从而使控制多边形绘制保持稳定，符合对“固定大小显存池”的要求。
+```bash
+python -u "src/work3/bezier_curve.py"
+```
 
-## 五、代码的总体数据流
+该版本完成实验三基础任务，包括鼠标添加控制点、控制折线显示、De Casteljau 曲线采样、GPU 光栅化以及按 `C` 清空画布。
 
-真正理解代码要看懂“数据到底从哪里来，到哪里去”。
+<p align="center">
+  <img src="../../assets/work3/demo_basic.gif" alt="Basic Bezier Demo" width="720">
+</p>
 
-本实验的数据流可以概括为：
+<a id="section-3-3"></a>
 
-1. 用户在窗口中点击鼠标
-2. 鼠标坐标被记录到 Python 列表 `control_points`
-3. CPU 端调用 `de_casteljau(points, t)` 或 B 样条采样函数，生成曲线采样点
-4. 曲线点被整理成 NumPy 数组
-5. NumPy 数组通过 `from_numpy(...)` 一次性传给 GPU Field
-6. GPU Kernel 或 CPU 光栅化逻辑将曲线点转换为屏幕像素
-7. 图像写入 `pixels`
-8. `canvas.set_image(pixels)` 将结果显示到窗口中
-9. 控制点和控制折线通过固定大小对象池在界面上叠加绘制
+### 3.3 选做一：反走样贝塞尔曲线
 
-这一流程体现了现代图形程序的基本组织方式：
-- 输入事件在 CPU 处理
-- 数学建模主要在 CPU 处理
-- 渲染和显示由 GPU 负责或由 GPU 显示最终结果
+```bash
+python -u "src/work3/bezier_curve_antialias.py"
+```
 
-## 六、数学原理说明
+该版本在基础贝塞尔曲线绘制流程上改进像素渲染方式，通过局部邻域距离加权减弱曲线边缘锯齿。
 
-### 1. 贝塞尔曲线
+<p align="center">
+  <img src="../../assets/work3/demo_antialias.gif" alt="Anti-Aliasing Bezier Demo" width="720">
+</p>
 
-贝塞尔曲线由一组控制点决定。设控制点为：
+<a id="section-3-4"></a>
 
-    P0, P1, ..., Pn-1
+### 3.4 选做二：Bezier 与 B-Spline 对比
+
+```bash
+python -u "src/work3/bspline_curve_compare.py"
+```
+
+该版本在同一组控制点下同时绘制贝塞尔曲线和均匀三次 B 样条曲线，适合观察两类曲线在几何控制方式上的差异。
+
+<p align="center">
+  <img src="../../assets/work3/demo_bspline_compare.gif" alt="Bezier vs B-Spline Demo" width="720">
+</p>
+
+<a id="section-3-5"></a>
+
+### 3.5 使用 uv 运行
+
+如果使用 `uv` 管理环境，也可以在项目根目录运行：
+
+```bash
+uv run python src/work3/bezier_curve.py
+```
+
+```bash
+uv run python src/work3/bezier_curve_antialias.py
+```
+
+```bash
+uv run python src/work3/bspline_curve_compare.py
+```
+
+<p align="right"><a href="#toc">回到目录 ↑</a></p>
+
+<a id="section-4"></a>
+
+## 四、实验目标
+
+<a id="section-4-1"></a>
+
+### 4.1 理解贝塞尔曲线的几何意义
+
+贝塞尔曲线由一组控制点决定。控制点本身通常不全部落在曲线上，但它们共同决定曲线的起点、终点、弯曲趋势和整体形状。通过交互式添加控制点，可以直观观察控制多边形对曲线形态的影响。
+
+<a id="section-4-2"></a>
+
+### 4.2 实现 De Casteljau 算法
+
+本实验使用 De Casteljau 算法计算贝塞尔曲线上的采样点。该算法通过逐层线性插值求得参数 `t` 对应的曲线点，几何意义直观，数值稳定，适合用于课程实验中的曲线生成。
+
+<a id="section-4-3"></a>
+
+### 4.3 掌握像素缓冲区与光栅化思想
+
+屏幕可以看作一个二维像素网格。曲线算法计算得到的是连续浮点坐标，而最终显示必须落到离散像素上。本实验通过 `pixels` 缓冲区直接操作像素颜色，从而理解从几何点到屏幕像素的光栅化过程。
+
+<a id="section-4-4"></a>
+
+### 4.4 理解图形界面交互与 CPU/GPU 分工
+
+程序通过 `ti.ui.Window` 创建交互窗口，在 CPU 端处理鼠标和键盘输入，在 GPU 端批量绘制曲线像素。实验中采用一次性数据传输和固定大小对象池，避免主循环中频繁动态申请显存对象，提高交互稳定性。
+
+<p align="right"><a href="#toc">回到目录 ↑</a></p>
+
+<a id="section-5"></a>
+
+## 五、实验原理
+
+<a id="section-5-1"></a>
+
+### 5.1 贝塞尔曲线表示
+
+设有 `n` 个控制点：
+
+$$
+\mathbf{P}_0,\mathbf{P}_1,\ldots,\mathbf{P}_{n-1}
+$$
 
 引入参数：
 
-    t ∈ [0, 1]
+$$
+t \in [0,1]
+$$
 
-当 `t` 从 0 连续变化到 1 时，曲线上的点依次被计算出来，所有这些点连接起来就形成贝塞尔曲线。
+当 `t` 从 0 连续变化到 1 时，曲线点的位置随之变化。所有采样点连接起来，就形成一条完整的贝塞尔曲线。
 
-贝塞尔曲线的特点是：
-- 曲线整体由全部控制点共同决定
-- 修改某个控制点，通常会影响整条曲线
-- 控制点越多，曲线阶数越高
+贝塞尔曲线具有明显的全局控制特性：当某个控制点发生变化时，整条曲线的形状通常都会受到影响。因此，在控制点较多时，贝塞尔曲线更适合观察整体形态变化，而不适合只修改局部形状。
 
-### 2. De Casteljau 算法
+<a id="section-5-2"></a>
 
-De Casteljau 算法是贝塞尔曲线最经典、最直观的求值算法。
+### 5.2 De Casteljau 算法
 
-思想如下：
-- 对相邻控制点做线性插值
-- 得到一层新的点
-- 再对新的一层做相同的插值
-- 不断重复，直到只剩一个点
-- 这个点就是曲线在当前参数 `t` 处的位置
+De Casteljau 算法的核心是递归线性插值。首先定义第 0 层控制点为：
 
-线性插值公式为：
+$$
+\mathbf{P}_i^{(0)}=\mathbf{P}_i
+$$
 
-    P'_i = (1 - t) * P_i + t * P_{i+1}
+对于给定参数 `t`，第 `r` 层插值点由上一层相邻两点线性插值得到：
 
-这一方法数值稳定、几何意义清晰，非常适合教学实验。
+$$
+\mathbf{P}_i^{(r)}(t)=(1-t)\mathbf{P}_i^{(r-1)}(t)+t\mathbf{P}_{i+1}^{(r-1)}(t)
+$$
 
-### 3. 光栅化
+不断重复该过程，直到只剩下一个点：
 
-屏幕本质上是一个二维像素网格。数学上曲线点的坐标是连续浮点值，而最终显示需要落到离散像素上。
+$$
+\mathbf{B}(t)=\mathbf{P}_0^{(n-1)}(t)
+$$
 
-本实验的光栅化过程是：
-- 先得到归一化曲线点坐标 `[x, y]`
-- 将其乘以屏幕宽高映射到像素坐标
-- 转为整数索引
-- 将对应像素赋值为目标颜色
+这个点就是贝塞尔曲线在参数 `t` 处的精确位置。程序在 CPU 端对 `t` 进行多次采样，得到一系列曲线点，再统一发送给 GPU 绘制。
 
-这一步完成了从几何模型到图像显示的转换。
+<a id="section-5-3"></a>
 
-## 七、必做代码中的核心实现与细节
+### 5.3 光栅化与像素映射
 
-### 1. 为什么曲线点要在 CPU 端先算完
+曲线点通常是 `[0,1]` 范围内的归一化浮点坐标。设屏幕宽度为 `W`，高度为 `H`，曲线点为：
 
-老师特别强调：不要在 Python 中每算出一个点就立刻去改 GPU Field。
+$$
+\mathbf{P}=(x,y)
+$$
 
-原因是：
-- CPU 和 GPU 是分离的
-- 每一次 Python 端写 GPU Field 都会发生跨设备通信
-- 如果 1000 多个曲线点都逐个通信，会非常慢
+对应的像素索引可以写成：
 
-因此正确做法是：
-- 先在 CPU 端把 1000 多个点全部算完
-- 存到一个 NumPy 数组里
-- 再一次性传到 GPU
+$$
+x_{pixel}=\lfloor xW \rfloor
+$$
 
-这就是本实验采用的方式。
+$$
+y_{pixel}=\lfloor yH \rfloor
+$$
 
-### 2. 为什么要预分配对象池
+当像素索引满足范围检查后，程序将 `pixels[x_pixel, y_pixel]` 处的颜色改为绿色，这就是本实验中的手动光栅化过程。
 
-GUI 的 `circles()` 和 `lines()` 更适合接收定长缓冲区，而不是主循环里反复创建形状不同的对象。
+<a id="section-5-4"></a>
 
-因此本实验对控制点和控制折线都采用固定大小对象池：
-- `gui_points` 保存控制点
-- `gui_indices` 保存折线连接关系
+### 5.4 CPU/GPU 批量数据传输
 
-这样做的优点是：
-- 数据结构稳定
-- 主循环逻辑更清楚
-- 更符合老师希望学生理解的“预分配显存池”思想
+现代图形程序中，CPU 和 GPU 是分离的。如果每计算一个曲线点就从 Python 端写入 GPU Field，会产生大量跨设备通信，导致程序卡顿。
 
-### 3. 为什么需要控制折线
+本实验采用批量传输方式：CPU 先计算所有曲线采样点，将结果存入 NumPy 数组，再通过 `from_numpy(...)` 一次性传输到 Taichi Field。随后 GPU Kernel 并行访问这些点并点亮对应像素，从而减少 CPU/GPU 频繁通信带来的开销。
 
-老师要求的是“观察控制点与曲线的关系”，因此仅仅画曲线是不够的。控制折线能直观展示：
-- 控制点之间的几何连接关系
-- 曲线如何受这些点影响
-- 新增控制点后控制多边形如何变化
+<a id="section-5-5"></a>
 
-所以代码中不仅绘制红色控制点，也绘制了灰色控制折线。
+### 5.5 反走样基本思想
 
-## 八、选做一：反走样贝塞尔曲线
+基础光栅化会把浮点曲线点直接截断到某个整数像素上，因此曲线边缘容易出现台阶状锯齿。反走样的目标是让曲线点对周围像素产生不同程度的颜色贡献，而不是只点亮一个像素。
 
-### 1. 选做背景
+设精确曲线点为：
 
-基础版曲线采用“一个曲线点只点亮一个像素”的方式，这样会带来明显的锯齿感。原因在于：
-- 曲线真实位置是连续浮点坐标
-- 显示时却把它粗暴截断为某一个整数像素
-- 导致边缘呈现明显台阶状
+$$
+\mathbf{Q}=(x_f,y_f)
+$$
 
-这就是图形学中的走样问题。
+某个邻域像素中心为：
 
-### 2. 选做目标
+$$
+\mathbf{S}_{u,v}=(u+0.5,v+0.5)
+$$
 
-在现有贝塞尔曲线绘制基础上，改进像素渲染逻辑，使曲线边缘更加平滑。
+二者距离为：
 
-### 3. 选做原理
+$$
+d_{u,v}=\left\|\mathbf{Q}-\mathbf{S}_{u,v}\right\|
+$$
 
-对于一个浮点曲线点，例如：
+可以根据距离设计权重：
 
-    (400.3, 500.8)
+$$
+w_{u,v}=\max\left(0,1-\frac{d_{u,v}}{r}\right)
+$$
 
-它不应该只贡献给一个像素，而应该对周围若干个像素都有影响。
+距离越近，像素颜色贡献越大；距离越远，颜色贡献越小。这样可以在曲线边缘形成更自然的过渡。
 
-本实验采用的方法是：
-- 考察该点周围 `3 × 3` 的像素邻域
-- 计算每个像素中心到该浮点点的距离
-- 距离越近，颜色权重越高
-- 距离越远，颜色权重越低
+<a id="section-5-6"></a>
 
-从而使一个曲线采样点在图像上形成柔和的局部过渡，而不是生硬的单像素硬边。
+### 5.6 均匀三次 B 样条曲线
 
-### 4. 代码实现细节
+B 样条曲线通过分段多项式实现局部控制。对于均匀三次 B 样条，每 4 个相邻控制点决定一段曲线。设一段曲线由控制点：
 
-在 `bezier_curve_antialias.py` 中：
-- 仍然使用 De Casteljau 算法生成曲线点
-- 但不再直接只点亮一个像素
-- 而是对曲线点周围 `3 × 3` 邻域进行加权着色
-- 权重采用基于距离的衰减模型
-- 多个曲线点对同一像素的贡献通过颜色取最大值或局部混合方式叠加
+$$
+\mathbf{P}_i,\mathbf{P}_{i+1},\mathbf{P}_{i+2},\mathbf{P}_{i+3}
+$$
 
-该实现的核心变化不在曲线生成，而在 **光栅化阶段**。
+决定，则局部参数 `t` 满足：
 
-### 5. 效果与现象
+$$
+t \in [0,1]
+$$
 
-与基础版相比，反走样版本可以明显看到：
-- 曲线边缘更柔和
-- 锯齿感减弱
-- 整体显示效果更平滑、更自然
+均匀三次 B 样条可写成基函数形式：
 
-这说明反走样属于渲染层面的优化，而不是改变曲线本身的几何定义。
+$$
+\mathbf{C}_i(t)=
+b_0(t)\mathbf{P}_i+
+b_1(t)\mathbf{P}_{i+1}+
+b_2(t)\mathbf{P}_{i+2}+
+b_3(t)\mathbf{P}_{i+3}
+$$
 
-## 九、选做二：Bezier 与 B-Spline 对比
+其中四个基函数为：
 
-### 1. 选做背景
+$$
+b_0(t)=\frac{(1-t)^3}{6}
+$$
 
-贝塞尔曲线有两个局限性：
+$$
+b_1(t)=\frac{3t^3-6t^2+4}{6}
+$$
 
-第一，**全局控制性**。  
-当控制点较多时，任意一个控制点的变化都可能影响整条曲线。
+$$
+b_2(t)=\frac{-3t^3+3t^2+3t+1}{6}
+$$
 
-第二，**阶数绑定**。  
-若有 `n` 个控制点，则贝塞尔曲线通常对应 `n-1` 阶多项式。控制点越多，曲线阶数越高，计算复杂度和数值不稳定性也随之增加。
+$$
+b_3(t)=\frac{t^3}{6}
+$$
 
-B 样条曲线则可以解决这些问题：
-- 保持固定阶数
-- 支持更多控制点
-- 修改一个控制点时只影响局部区域
+当控制点数量大于等于 4 时，程序依次遍历所有相邻的 4 个控制点生成局部曲线段，并将这些分段曲线拼接成完整的 B 样条曲线。
 
-### 2. 选做目标
+<p align="right"><a href="#toc">回到目录 ↑</a></p>
 
-在现有交互与绘制框架基础上，增加均匀三次 B 样条曲线支持，并与贝塞尔曲线进行对比显示。
+<a id="section-6"></a>
 
-### 3. 选做原理
+## 六、基础任务实现
 
-对于均匀三次 B 样条：
-- 每 4 个相邻控制点确定一段局部三次曲线
-- 若共有 `n` 个控制点，则曲线由 `n - 3` 段拼接而成
-- 每一段都只依赖 4 个局部控制点，而不是全部控制点
+<a id="section-6-1"></a>
 
-这体现了 B 样条的“局部控制”特性。
+## 任务 1：初始化与显存预分配
 
-### 4. 本实验采用的实现方式
+<a id="section-6-1-1"></a>
 
-老师提示中给了两种思路：
-- Cox-de Boor 递归基函数
-- 均匀三次 B 样条的固定基函数或矩阵形式
+### 任务要求
 
-本实验采用的是第二种更适合图形学入门展示的方式：
-- 直接写均匀三次 B 样条的四个基函数
-- 每 4 个相邻控制点生成一段曲线
-- 所有分段平滑拼接起来构成整条 B 样条曲线
+实验要求初始化 Taichi GPU 后端，设置屏幕尺寸、曲线采样数和最大控制点数量，并提前分配像素缓冲区、曲线点缓冲区和控制点对象池。
 
-这样实现清晰、效率也较高，且更适合作为课程实验展示。
+<a id="section-6-1-2"></a>
 
-### 5. 为什么做成“同屏对比”
+### 实现方式
 
-在 `bspline_curve_compare.py` 中，本实验不是只单独画 B 样条，而是：
-- 同一组控制点下同时显示 Bezier 曲线与 B-Spline 曲线
-- 使用不同颜色区分两者
+本实验在 `bezier_curve.py` 中完成初始化。程序使用 `ti.init(arch=ti.gpu)` 启动 GPU 后端，设置 `800 × 800` 的显示窗口，并预先创建 `pixels`、`curve_points_field` 和 `gui_points` 三类核心缓冲区。控制折线也使用固定大小的索引池进行管理，避免主循环中反复创建动态对象。
 
-这样设计的优点是：
-- 对比更直观
-- 更容易观察两类曲线的几何差异
-- 更容易展示“Bezier 全局控制”与“B-Spline 局部控制”的不同
+对应代码位置：
 
-### 6. 效果与现象
+```python
+ti.init(arch=ti.gpu)
+pixels
+curve_points_field
+gui_points
+gui_indices
+```
 
-当控制点数量增加时，可以观察到：
-- Bezier 曲线对所有控制点更敏感
-- B-Spline 曲线更平滑，且某些局部控制点的变化主要影响附近区域
-- 在密集控制点区域，B-Spline 往往表现出更明显的局部性
+<a id="section-6-2"></a>
 
-这正是老师希望学生在选做部分中观察和验证的现象。
+## 任务 2：实现 De Casteljau 算法
 
-## 十、程序交互方式
+<a id="section-6-2-1"></a>
 
-### 必做版 `bezier_curve.py`
+### 任务要求
 
-- 鼠标左键：添加控制点
-- `C` 键：清空所有控制点
+实验要求编写纯 Python 函数 `de_casteljau(points, t)`，根据输入控制点和参数 `t` 返回贝塞尔曲线上的二维坐标。
 
-### 选做1：反走样版 `bezier_curve_antialias.py`
+<a id="section-6-2-2"></a>
 
-- 鼠标左键：添加控制点
-- 鼠标右键：撤销最后一个控制点
-- `C` 键：清空
-- 可根据程序设计额外支持开关抗锯齿模式
+### 实现方式
 
-### 选做2：对比版 `bspline_curve_compare.py`
+程序在 CPU 端实现 `de_casteljau(points, t)`。函数首先复制当前控制点列表，然后不断对相邻点进行线性插值，直到最后只剩一个点。该点即为当前参数 `t` 对应的贝塞尔曲线点。
 
-- 鼠标左键：添加控制点
-- 鼠标右键：撤销最后一个控制点
-- `C` 键：清空
-- `M` 键：切换显示模式，例如：
-  - 同时显示
-  - 仅显示 Bezier
-  - 仅显示 B-Spline
+对应代码位置：
 
-## 十一、运行方式
+```python
+de_casteljau(points, t)
+```
 
-在项目根目录下运行：
+<a id="section-6-3"></a>
 
-    python src/Work3/bezier_curve.py
+## 任务 3：编写 GPU 绘制内核
 
-    python src/Work3/bezier_curve_antialias.py
+<a id="section-6-3-1"></a>
 
-    python src/Work3/bspline_curve_compare.py
+### 任务要求
 
-如果使用 `uv` 管理环境，可以运行：
+实验要求编写 GPU Kernel，从 `curve_points_field` 中读取曲线采样点，将归一化坐标映射为像素索引，并在越界检查后点亮对应像素。
 
-    uv run python src/Work3/bezier_curve.py
+<a id="section-6-3-2"></a>
 
-    uv run python src/Work3/bezier_curve_antialias.py
+### 实现方式
 
-    uv run python src/Work3/bspline_curve_compare.py
+本实验通过 `draw_curve_kernel(n: ti.i32)` 完成 GPU 光栅化。Kernel 内部读取曲线点坐标，将其乘以屏幕宽高并转换为整数像素位置，再将合法范围内的像素设置为绿色。该过程在 GPU 端并行执行，避免 Python 逐像素写入 GPU Field 造成卡顿。
 
-## 十二、环境配置
+对应代码位置：
 
-推荐使用 Conda：
+```python
+draw_curve_kernel(n: ti.i32)
+```
 
-    conda create -n cg_env python=3.12 -y
-    conda activate cg_env
+<a id="section-6-4"></a>
 
-安装依赖：
+## 任务 4：主循环、曲线逻辑与交互响应
 
-    pip install taichi numpy
+<a id="section-6-4-1"></a>
 
-如果已经在课程实验一或实验二中配置过环境，也可以直接复用原有环境。
+### 任务要求
 
-## 十三、实验结果总结
+实验要求创建 GGUI 窗口，在主循环中监听鼠标点击和键盘事件。鼠标左键添加控制点，按 `C` 键清空控制点。当控制点数量不少于 2 时，程序需要计算曲线采样点并绘制到屏幕上。
 
-本实验完整完成了老师布置的贝塞尔曲线必做任务，并在此基础上比较漂亮地完成了两个选做方向的扩展。
+<a id="section-6-4-2"></a>
 
-### 1. 必做任务完成情况
+### 实现方式
 
-已经完成：
-- GPU 初始化
-- 像素缓冲区与对象池预分配
-- De Casteljau 算法实现
-- GPU Kernel 光栅化
-- 鼠标交互与键盘清空
-- 控制点、控制折线、曲线的可视化显示
-- CPU 批量计算 + GPU 批量渲染的数据流
+程序在 `while window.running:` 主循环中处理交互事件。鼠标左键点击时，当前鼠标坐标会被加入控制点列表；按下 `C` 键时，控制点列表被清空。当控制点数量大于等于 2 时，CPU 端循环采样 `1001` 个曲线点，将结果打包为 NumPy 数组并通过 `from_numpy(...)` 一次性传输给 GPU，再调用 Kernel 绘制曲线。
 
-### 2. 选做一完成情况
+对应代码位置：
 
-已经实现：
-- 在基础光栅化之上引入局部邻域距离加权
-- 改善曲线边缘的锯齿现象
-- 显示效果明显更平滑
+```python
+window.get_event()
+window.get_cursor_pos()
+curve_points_field.from_numpy(...)
+canvas.set_image(pixels)
+```
 
-### 3. 选做二完成情况
+<a id="section-6-5"></a>
 
-已经实现：
-- 均匀三次 B 样条曲线采样
-- 与 Bezier 曲线的同屏对比展示
-- 对两类曲线的几何行为进行可视化观察
+## 任务 5：绘制交互控制点
 
-## 十四、实验体会
+<a id="section-6-5-1"></a>
 
-通过本实验，可以从三个层面理解计算机图形学中的曲线绘制问题：
+### 任务要求
 
-第一，**几何层面**。  
-理解控制点、参数曲线和曲线形态之间的关系。
+实验要求使用固定大小的 Taichi Field 绘制控制点。当真实控制点数量小于对象池容量时，需要将无效位置放到屏幕外，保证只有真实控制点显示出来。
 
-第二，**算法层面**。  
-掌握 De Casteljau 算法和 B 样条分段求值的基本思想。
+<a id="section-6-5-2"></a>
 
-第三，**渲染层面**。  
-理解从浮点几何坐标到离散像素显示的映射过程，并认识反走样在图像质量提升中的作用。
+### 实现方式
 
-同时，本实验也帮助理解了现代图形程序中的工程性问题：
-- 为什么 CPU 和 GPU 要分工
-- 为什么要批量传输数据
-- 为什么要避免在主循环中频繁动态申请显存对象
-- 为什么要使用固定大小对象池管理 GUI 数据
+本实验创建固定长度的 `gui_points` 作为控制点对象池。每一帧先将 NumPy 数组填充为 `-10.0`，使无效点位于屏幕外，再把真实控制点覆盖到数组前部。上传到 `gui_points` 后，调用 `canvas.circles(...)` 绘制红色控制点。控制折线也使用固定大小索引池实现，从而稳定显示控制多边形。
 
-## 十五、后续可继续改进的方向
+对应代码位置：
 
-如果继续扩展本实验，还可以尝试：(有空试试，记一下)
+```python
+gui_points.from_numpy(...)
+canvas.circles(...)
+canvas.lines(...)
+```
 
-- 增加控制点拖拽功能
-- 在窗口中直接显示当前模式或文字提示
-- 支持更多种反走样核函数
-- 支持更一般的 B 样条节点向量与 Cox-de Boor 递归实现
-- 增加截图导出或参数调节界面
-- 进一步做 Bezier、B-Spline、Catmull-Rom 等多曲线对比展示
+<a id="section-6-6"></a>
 
-## 十六、附注
+## 基础任务可视化结果
 
-本实验的三个程序采用“一个主题对应一个文件”的组织方式：
-- 必做版负责标准任务
-- 反走样版负责渲染优化
-- B-Spline 版负责曲线建模扩展
+<table align="center">
+  <tr>
+    <td align="center"><strong>动态交互演示</strong></td>
+    <td align="center"><strong>终端输出说明图</strong></td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="../../assets/work3/demo_basic.gif" alt="Basic Bezier Demo" width="360">
+    </td>
+    <td align="center">
+      <img src="../../assets/work3/demo_basic.png" alt="Basic Bezier Terminal Output" width="360">
+    </td>
+  </tr>
+</table>
 
-使代码结构更清晰，便于单独运行、录制 GIF、撰写 README，展示每个部分的实验目标与实现重点。
+上图展示了基础贝塞尔曲线程序的交互与运行效果。动态演示中，用户可以通过鼠标左键连续添加若干控制点，程序会实时显示红色控制点、灰色控制折线和绿色贝塞尔曲线；按下 `C` 键后，画布会被清空并恢复初始状态。终端输出说明图用于记录程序启动后的运行环境、交互提示和基础功能说明，便于说明该版本已经完成控制点输入、曲线采样、GPU 绘制和清空画布等核心任务。
+
+<p align="right"><a href="#toc">回到目录 ↑</a></p>
+
+<a id="section-7"></a>
+
+## 七、选做内容
+
+<a id="section-7-1"></a>
+
+## 7.1 选做一：反走样贝塞尔曲线
+
+<a id="section-7-1-1"></a>
+
+### 7.1.1 任务要求
+
+基础光栅化绘制会将曲线采样点直接映射到单个像素，容易出现阶梯状锯齿。选做一要求改进像素渲染逻辑，使贝塞尔曲线边缘更加平滑。
+
+<a id="section-7-1-2"></a>
+
+### 7.1.2 数学原理
+
+基础版本中，一个浮点曲线点被强制映射到一个整数像素位置：
+
+$$
+x_{pixel}=\lfloor x_f \rfloor
+$$
+
+$$
+y_{pixel}=\lfloor y_f \rfloor
+$$
+
+这种做法会损失亚像素信息。反走样版本保留浮点坐标的局部影响，考察曲线点周围的 `3 × 3` 像素邻域，并根据距离分配不同权重：
+
+$$
+w_{u,v}=\max\left(0,1-\frac{d_{u,v}}{r}\right)
+$$
+
+最终像素颜色由邻域贡献共同决定。距离曲线真实位置越近，颜色越亮；距离越远，颜色越弱，从而让曲线边缘产生平滑过渡。
+
+<a id="section-7-1-3"></a>
+
+### 7.1.3 实现思路
+
+`bezier_curve_antialias.py` 仍然使用 De Casteljau 算法生成曲线采样点，但在光栅化阶段不再只点亮单个像素。程序遍历曲线点周围的局部像素邻域，计算每个邻域像素中心到曲线点的距离，并根据距离权重更新颜色。这样既保持了原有曲线几何定义，又改善了最终显示质量。
+
+对应代码位置：
+
+```python
+bezier_curve_antialias.py
+draw_curve_antialias_kernel(...)
+```
+
+<a id="section-7-1-4"></a>
+
+### 7.1.4 可视化结果
+
+<table align="center">
+  <tr>
+    <td align="center"><strong>动态交互演示</strong></td>
+    <td align="center"><strong>终端输出说明图</strong></td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="../../assets/work3/demo_antialias.gif" alt="Anti-Aliasing Demo" width="360">
+    </td>
+    <td align="center">
+      <img src="../../assets/work3/demo_antialias.png" alt="Anti-Aliasing Terminal Output" width="360">
+    </td>
+  </tr>
+</table>
+
+上图展示了反走样贝塞尔曲线的运行效果。动态演示中，程序在添加若干控制点后绘制曲线，并展示普通渲染与反走样渲染在视觉上的差异；反走样版本通过局部像素邻域的距离加权，使曲线边缘不再是单像素硬截断，而是呈现更平滑的过渡效果。终端输出说明图用于记录该版本的功能提示和运行状态，说明程序已经完成反走样渲染逻辑，并能够展示曲线边缘更加平滑的视觉效果。
+
+<a id="section-7-1-5"></a>
+
+### 7.1.5 本部分小结
+
+选做一没有改变贝塞尔曲线的数学定义，而是在光栅化阶段进行优化。通过利用亚像素信息和邻域距离加权，程序能够减弱曲线边缘的锯齿现象，使最终显示效果更平滑。
+
+<a id="section-7-2"></a>
+
+## 7.2 选做二：Bezier 与 B-Spline 对比
+
+<a id="section-7-2-1"></a>
+
+### 7.2.1 任务要求
+
+贝塞尔曲线具有全局控制特性，控制点较多时阶数也会升高。选做二要求在现有交互框架中加入 B 样条曲线绘制，并与贝塞尔曲线进行对比，以观察两类曲线在几何行为上的差异。
+
+<a id="section-7-2-2"></a>
+
+### 7.2.2 数学原理
+
+均匀三次 B 样条曲线每一段只依赖 4 个相邻控制点。若当前段由控制点：
+
+$$
+\mathbf{P}_i,\mathbf{P}_{i+1},\mathbf{P}_{i+2},\mathbf{P}_{i+3}
+$$
+
+决定，则曲线点可以写成：
+
+$$
+\mathbf{C}_i(t)=
+b_0(t)\mathbf{P}_i+
+b_1(t)\mathbf{P}_{i+1}+
+b_2(t)\mathbf{P}_{i+2}+
+b_3(t)\mathbf{P}_{i+3}
+$$
+
+其中：
+
+$$
+b_0(t)=\frac{(1-t)^3}{6}
+$$
+
+$$
+b_1(t)=\frac{3t^3-6t^2+4}{6}
+$$
+
+$$
+b_2(t)=\frac{-3t^3+3t^2+3t+1}{6}
+$$
+
+$$
+b_3(t)=\frac{t^3}{6}
+$$
+
+当共有 `n` 个控制点时，程序可以生成：
+
+$$
+n-3
+$$
+
+段三次 B 样条曲线。由于每段只依赖局部的 4 个控制点，B 样条曲线具有明显的局部控制特性。
+
+<a id="section-7-2-3"></a>
+
+### 7.2.3 实现思路
+
+`bspline_curve_compare.py` 在基础交互框架上同时计算贝塞尔曲线和均匀三次 B 样条曲线。贝塞尔曲线仍使用 De Casteljau 算法计算；B 样条曲线则按相邻 4 个控制点逐段采样，并将所有分段曲线点拼接起来。程序使用不同颜色区分两类曲线，从而在同一窗口中直接比较它们的形态差异。
+
+对应代码位置：
+
+```python
+bspline_curve_compare.py
+de_casteljau(points, t)
+bspline_point(...)
+generate_bspline_points(...)
+```
+
+<a id="section-7-2-4"></a>
+
+### 7.2.4 可视化结果
+
+<table align="center">
+  <tr>
+    <td align="center"><strong>动态交互演示</strong></td>
+    <td align="center"><strong>终端输出说明图</strong></td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="../../assets/work3/demo_bspline_compare.gif" alt="Bezier vs B-Spline Demo" width="360">
+    </td>
+    <td align="center">
+      <img src="../../assets/work3/demo_bspline_compare.png" alt="Bezier vs B-Spline Terminal Output" width="360">
+    </td>
+  </tr>
+</table>
+
+上图展示了 Bezier 与 B-Spline 曲线的同屏对比效果。动态演示中，用户添加同一组控制点后，程序同时绘制贝塞尔曲线与均匀三次 B 样条曲线，便于观察两类曲线在形状变化上的差异；贝塞尔曲线更容易受到整体控制点变化影响，而 B 样条曲线表现出更明显的局部控制特征。终端输出说明图用于记录该版本的模式说明、颜色含义和操作提示，说明程序已经完成两类曲线的同屏绘制与对比展示。
+
+<a id="section-7-2-5"></a>
+
+### 7.2.5 本部分小结
+
+选做二扩展了曲线建模能力。通过同屏对比可以看到，贝塞尔曲线更适合展示整体控制点对曲线形状的影响，而 B 样条曲线更适合表达局部控制和分段平滑拼接效果。
+
+<p align="right"><a href="#toc">回到目录 ↑</a></p>
+
+<a id="section-8"></a>
+
+## 八、实验总结
+
+本实验完成了老师文档中要求的基础贝塞尔曲线绘制任务，并进一步完成了反走样和 B 样条曲线对比两个选做内容。基础部分实现了控制点交互、控制折线显示、De Casteljau 曲线采样、GPU 光栅化和按键清空等功能，完整覆盖了实验三的核心要求。
+
+在实现方式上，程序将曲线采样和图形显示进行了清晰分工。CPU 端负责处理交互事件和计算曲线采样点，GPU 端负责批量绘制像素。通过 NumPy 数组一次性传输曲线点，并使用固定大小对象池管理控制点和控制折线，程序避免了主循环中的频繁动态分配和跨设备逐点通信。
+
+选做部分中，反走样版本从像素渲染角度改善了曲线边缘质量，使曲线显示更加平滑；B-Spline 对比版本从曲线建模角度扩展了实验内容，使程序能够直观展示 Bezier 曲线与 B 样条曲线在全局控制和局部控制上的差异。整体来看，本实验从曲线数学、交互设计、像素光栅化和 GPU 数据管理多个方面完成了对贝塞尔曲线绘制流程的系统实现。
+
+<p align="right"><a href="#toc">回到目录 ↑</a></p>
