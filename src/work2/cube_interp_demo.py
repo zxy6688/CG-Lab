@@ -2,10 +2,11 @@ import math
 import numpy as np
 import taichi as ti
 
-ti.init(arch=ti.cpu)
+ti.init(arch=ti.gpu)
 
 WIDTH, HEIGHT = 1200, 900
 ASPECT = WIDTH / HEIGHT
+
 BG_COLOR = 0x0F1220
 EDGE_BASE = 0x7CFFCB
 EDGE_DARK = 0x2B5C56
@@ -18,26 +19,23 @@ Z_AXIS_COLOR = 0x60A5FA
 FOV_DEG = 55.0
 CAMERA_POS = np.array([0.0, 0.0, 5.5], dtype=np.float64)
 
-# 立方体 8 个顶点，中心在原点，边长为 2
 CUBE_VERTICES = np.array([
     [-1.0, -1.0, -1.0],
-    [ 1.0, -1.0, -1.0],
-    [ 1.0,  1.0, -1.0],
-    [-1.0,  1.0, -1.0],
-    [-1.0, -1.0,  1.0],
-    [ 1.0, -1.0,  1.0],
-    [ 1.0,  1.0,  1.0],
-    [-1.0,  1.0,  1.0],
+    [1.0, -1.0, -1.0],
+    [1.0, 1.0, -1.0],
+    [-1.0, 1.0, -1.0],
+    [-1.0, -1.0, 1.0],
+    [1.0, -1.0, 1.0],
+    [1.0, 1.0, 1.0],
+    [-1.0, 1.0, 1.0],
 ], dtype=np.float64)
 
-# 立方体 12 条边
 CUBE_EDGES = [
     (0, 1), (1, 2), (2, 3), (3, 0),
     (4, 5), (5, 6), (6, 7), (7, 4),
     (0, 4), (1, 5), (2, 6), (3, 7),
 ]
 
-# 3D 坐标轴：X、Y、Z
 AXIS_POINTS = np.array([
     [0.0, 0.0, 0.0], [2.4, 0.0, 0.0],
     [0.0, 0.0, 0.0], [0.0, 2.4, 0.0],
@@ -50,7 +48,11 @@ def clamp(x, lo, hi):
 
 
 def hex_to_rgb(color):
-    return np.array([(color >> 16) & 255, (color >> 8) & 255, color & 255], dtype=np.float64)
+    return np.array([
+        (color >> 16) & 255,
+        (color >> 8) & 255,
+        color & 255
+    ], dtype=np.float64)
 
 
 def rgb_to_hex(rgb):
@@ -72,6 +74,7 @@ def quat_normalize(q):
 def quat_mul(q1, q2):
     w1, x1, y1, z1 = q1
     w2, x2, y2, z2 = q2
+
     return np.array([
         w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2,
         w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2,
@@ -84,7 +87,9 @@ def axis_angle_to_quat(axis, deg):
     rad = math.radians(deg)
     axis = np.array(axis, dtype=np.float64)
     axis = axis / np.linalg.norm(axis)
+
     s = math.sin(rad / 2.0)
+
     return quat_normalize(np.array([
         math.cos(rad / 2.0),
         axis[0] * s,
@@ -102,16 +107,18 @@ def quat_from_euler_xyz(rx_deg, ry_deg, rz_deg):
 
 def quat_to_matrix(q):
     w, x, y, z = quat_normalize(q)
+
     return np.array([
-        [1 - 2 * (y * y + z * z), 2 * (x * y - z * w),     2 * (x * z + y * w)],
-        [2 * (x * y + z * w),     1 - 2 * (x * x + z * z), 2 * (y * z - x * w)],
-        [2 * (x * z - y * w),     2 * (y * z + x * w),     1 - 2 * (x * x + y * y)],
+        [1 - 2 * (y * y + z * z), 2 * (x * y - z * w), 2 * (x * z + y * w)],
+        [2 * (x * y + z * w), 1 - 2 * (x * x + z * z), 2 * (y * z - x * w)],
+        [2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (x * x + y * y)],
     ], dtype=np.float64)
 
 
 def slerp(q0, q1, t):
     q0 = quat_normalize(q0)
     q1 = quat_normalize(q1)
+
     dot = float(np.dot(q0, q1))
 
     if dot < 0.0:
@@ -124,6 +131,7 @@ def slerp(q0, q1, t):
     theta_0 = math.acos(clamp(dot, -1.0, 1.0))
     theta = theta_0 * t
     q2 = quat_normalize(q1 - q0 * dot)
+
     return quat_normalize(q0 * math.cos(theta) + q2 * math.sin(theta))
 
 
@@ -137,11 +145,13 @@ def view_transform(points_world):
 
 def project_points(points_view):
     focal = 1.0 / math.tan(math.radians(FOV_DEG) / 2.0)
+
     projected = []
     depths = []
 
     for p in points_view:
         z_cam = -p[2]
+
         if z_cam < 1e-4:
             projected.append(np.array([-10.0, -10.0]))
             depths.append(-1e9)
@@ -170,6 +180,7 @@ def draw_axes(gui, rot):
     for i in range(3):
         p0 = pts_2d[2 * i]
         p1 = pts_2d[2 * i + 1]
+
         gui.line(tuple(p0), tuple(p1), radius=2.5, color=axis_colors[i])
         gui.circle(tuple(p1), radius=4, color=axis_colors[i])
         gui.text(labels[i], pos=(p1[0] + 0.01, p1[1] + 0.005), color=axis_colors[i])
@@ -180,9 +191,11 @@ def draw_cube(gui, vertices_world):
     verts_2d, depths = project_points(vertices_view)
 
     edge_order = []
+
     for a, b in CUBE_EDGES:
         avg_depth = (depths[a] + depths[b]) * 0.5
         edge_order.append((avg_depth, a, b))
+
     edge_order.sort(reverse=True)
 
     for avg_depth, a, b in edge_order:
@@ -196,23 +209,30 @@ def draw_cube(gui, vertices_world):
         depth_t = clamp((avg_depth - 3.2) / 4.0, 0.0, 1.0)
         main_color = mix_color(EDGE_DARK, EDGE_BASE, depth_t)
 
-        # 先画一层暗色粗线，再画亮色细线，让线框更好看
         gui.line(tuple(p0), tuple(p1), radius=4.5, color=0x16202A)
         gui.line(tuple(p0), tuple(p1), radius=2.2, color=main_color)
 
-    vertex_order = sorted([(depths[i], i) for i in range(len(depths))], reverse=True)
+    vertex_order = sorted(
+        [(depths[i], i) for i in range(len(depths))],
+        reverse=True
+    )
+
     for depth, i in vertex_order:
         p = verts_2d[i]
         depth_t = clamp((depth - 3.2) / 4.0, 0.0, 1.0)
         r = 2.2 + 2.4 * depth_t
+
         gui.circle(tuple(p), radius=r + 2.0, color=0x16202A)
         gui.circle(tuple(p), radius=r, color=VERTEX_COLOR)
 
 
 def main():
-    gui = ti.GUI("Work1 Bonus - 3D Cube Interpolation", res=(WIDTH, HEIGHT), background_color=BG_COLOR)
+    gui = ti.GUI(
+        "Work2 Option 2 - 3D Cube Rotation Interpolation",
+        res=(WIDTH, HEIGHT),
+        background_color=BG_COLOR
+    )
 
-    # 两个不同姿态
     q0 = quat_from_euler_xyz(0.0, 0.0, 0.0)
     q1 = quat_from_euler_xyz(75.0, 215.0, 38.0)
 
@@ -249,12 +269,9 @@ def main():
         if not paused and not manual_mode:
             time_acc += dt * speed
 
-        # 自动模式下，在两个姿态之间来回插值
         t = t_manual if manual_mode else 0.5 + 0.5 * math.sin(time_acc)
-
         q_t = slerp(q0, q1, t)
 
-        # 在插值基础上再加一点轻微动态摆动，让动画更自然
         rot_interp = quat_to_matrix(q_t)
         rot_extra = quat_to_matrix(
             quat_from_euler_xyz(
@@ -263,8 +280,8 @@ def main():
                 0.0
             )
         )
-        model_rot = rot_extra @ rot_interp
 
+        model_rot = rot_extra @ rot_interp
         vertices_world = transform_points(CUBE_VERTICES, model_rot)
 
         gui.clear(BG_COLOR)
