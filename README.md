@@ -7,16 +7,16 @@
   <img src="https://img.shields.io/badge/Taichi-1.7.4-orange?style=for-the-badge" alt="Taichi">
   <img src="https://img.shields.io/badge/Backend-Vulkan-green?style=for-the-badge" alt="Backend">
   <img src="https://img.shields.io/badge/Package-uv-purple?style=for-the-badge" alt="uv">
-  <img src="https://img.shields.io/badge/Works-1--5-brightgreen?style=for-the-badge" alt="Works">
+  <img src="https://img.shields.io/badge/Works-1--6-brightgreen?style=for-the-badge" alt="Works">
 </p>
 
 <p align="center">
-  A Taichi-based computer graphics lab repository covering particle simulation, MVP transformation, Bézier curves, Phong lighting, and Whitted-style ray tracing.
+  A Taichi-based computer graphics lab repository covering particle simulation, MVP transformation, Bézier curves, Phong lighting, Whitted-style ray tracing, and differentiable rendering with PyTorch3D.
 </p>
 
 <br>
 
-本仓库用于整理 **计算机图形学课程实验** 的代码、实验说明文档与可视化展示资源。项目主要基于 **Python + Taichi** 实现，采用统一的 `src/workX` 源码结构与 `assets/workX` 资源结构，便于后续维护、展示和提交课程作业。
+本仓库用于整理 **计算机图形学课程实验** 的代码、实验说明文档与可视化展示资源。项目主要基于 **Python + Taichi** 实现，同时在 Work6 中使用 **PyTorch3D + CUDA** 完成可微渲染实验。仓库采用统一的 `src/workX` 源码结构与 `assets/workX` 资源结构，便于后续维护、展示和提交课程作业。
 
 <a id="toc"></a>
 
@@ -52,6 +52,7 @@
 - [四、环境说明](#section-4)
   - [4.1 推荐环境](#section-4-1)
   - [4.2 Taichi 后端说明](#section-4-2)
+  - [4.3 PyTorch3D 与云端 GPU 说明](#section-4-3)
 
 </details>
 
@@ -64,6 +65,7 @@
   - [5.3 Work3 运行命令](#section-5-3)
   - [5.4 Work4 运行命令](#section-5-4)
   - [5.5 Work5 运行命令](#section-5-5)
+  - [5.6 Work6 运行说明](#section-5-6)
 
 </details>
 
@@ -124,7 +126,7 @@
 
 ### 1.1 实验导航表
 
-当前仓库已经整理了五个实验。每个实验都配套独立源码目录、展示资源目录和子 README 文档。
+当前仓库已经整理了六个实验。每个实验都配套独立源码目录、展示资源目录和子 README 文档。
 
 | 实验编号 | 实验名称 | 关键词 | 子 README |
 | --- | --- | --- | --- |
@@ -133,6 +135,7 @@
 | Work3 | 贝塞尔曲线 | De Casteljau、光栅化、反走样、B-Spline 对比 | [进入 Work3 文档](src/work3/README.md) |
 | Work4 | Phong 光照模型 | Phong、Blinn-Phong、硬阴影、交互式参数调节 | [进入 Work4 文档](src/work4/README.md) |
 | Work5 | 光线追踪 | Ray Tracing、反射、硬阴影、玻璃折射、MSAA | [进入 Work5 文档](src/work5/README.md) |
+| Work6 | 可微渲染 | PyTorch3D、Soft Rasterization、Silhouette、RGB、Texture Fitting | [进入 Work6 文档](src/work6/README.md) |
 
 <a id="section-1-2"></a>
 
@@ -173,6 +176,17 @@
   </tr>
 </table>
 
+<table align="center">
+  <tr>
+    <td align="center">
+      <strong>Work6</strong><br>
+      可微渲染<br>
+      Differentiable Rendering<br>
+      <a href="src/work6/README.md">查看文档</a>
+    </td>
+  </tr>
+</table>
+
 <a id="section-1-3"></a>
 
 ### 1.3 实验完成状态
@@ -184,6 +198,7 @@
 | Work3 | ✅ | ✅ | ✅ | ✅ |
 | Work4 | ✅ | ✅ | ✅ | ✅ |
 | Work5 | ✅ | ✅ | ✅ | ✅ |
+| Work6 | ✅ | ✅ | ✅ | ✅ |
 
 <p align="right"><a href="#toc">回到目录 ↑</a></p>
 
@@ -229,6 +244,20 @@
   </tr>
 </table>
 
+<br>
+
+<p align="center">
+  <strong>Work6 可微渲染 · Differentiable Rendering</strong>
+</p>
+
+<p align="center">
+  <img src="assets/work6/texture_fit_optimization.gif" alt="Work6 Differentiable Rendering Demo" width="720">
+</p>
+
+<p align="center">
+  <sub>Work6 使用 PyTorch3D 构建可微渲染管线，通过剪影、RGB 图像与纹理监督，将初始球体优化为目标奶牛网格。</sub>
+</p>
+
 该预览区展示了每个实验最具有代表性的运行效果。完整的实验目标、数学原理、任务实现、选做内容和更多效果图，请进入各个 `src/workX/README.md` 查看。
 
 <p align="right"><a href="#toc">回到目录 ↑</a></p>
@@ -247,6 +276,7 @@ CG-Lab/
 │   ├── work3/                         # Work3 可视化资源：Bezier、反走样、B-Spline 对比图
 │   ├── work4/                         # Work4 可视化资源：Phong、Blinn-Phong、硬阴影效果图
 │   ├── work5/                         # Work5 可视化资源：光线追踪、玻璃折射、MSAA 效果图
+│   ├── work6/                         # Work6 可视化资源：可微渲染、剪影优化、RGB 优化、纹理拟合
 │   └── ssh_set.png                    # SSH 配置说明截图
 │
 ├── src/
@@ -281,12 +311,22 @@ CG-Lab/
 │   │   ├── test.py                    # 参考代码测试版
 │   │   └── README.md                  # Work4 实验说明文档
 │   │
-│   └── work5/
-│       ├── main.py                    # 基础版：Whitted-Style 光线追踪、反射、硬阴影和 UI 控制
-│       ├── GlassRefraction.py         # 选做一：玻璃折射材质、全反射和 Fresnel 近似
-│       ├── AntiAliasingMSAA.py        # 选做二：MSAA 多重采样抗锯齿
-│       ├── test.py                    # 参考代码测试版
-│       └── README.md                  # Work5 实验说明文档
+│   ├── work5/
+│   │   ├── main.py                    # 基础版：Whitted-Style 光线追踪、反射、硬阴影和 UI 控制
+│   │   ├── GlassRefraction.py         # 选做一：玻璃折射材质、全反射和 Fresnel 近似
+│   │   ├── AntiAliasingMSAA.py        # 选做二：MSAA 多重采样抗锯齿
+│   │   ├── test.py                    # 参考代码测试版
+│   │   └── README.md                  # Work5 实验说明文档
+│   │
+│   └── work6/
+│       ├── cow.obj                                # 低难度剪影优化使用的目标模型
+│       ├── work6_differentiable_rendering.ipynb   # 主实验 Notebook，包含剪影优化、RGB 优化和消融实验
+│       ├── work6_low_silhouette.ipynb             # 低难度剪影优化备份版本
+│       ├── work6_true_textured_fit.ipynb          # 真实纹理牛拟合版本
+│       ├── data/
+│       │   └── cow_mesh/                          # 官方 textured cow 数据
+│       ├── output_meshes/                         # 最终输出的 .obj 模型
+│       └── README.md                              # Work6 实验说明文档
 │
 ├── .gitignore                         # Git 忽略规则，排除 .venv、缓存文件和本地临时文件
 ├── pyproject.toml                     # uv 项目配置与依赖声明
@@ -358,6 +398,32 @@ uv add taichi numpy
 | `vulkan` | Windows / Linux 常见现代图形后端 |
 | `opengl` | 兼容性图形后端 |
 | `cpu` | 未调用 GPU，只使用 CPU 执行 |
+
+<a id="section-4-3"></a>
+
+### 4.3 PyTorch3D 与云端 GPU 说明
+
+Work6 与前几个 Taichi 实验不同，主要依赖 PyTorch3D、PyTorch 和 CUDA 环境。由于 PyTorch3D 涉及底层 C++ / CUDA 扩展编译，本实验使用 ModelScope DSW GPU Notebook 完成运行。
+
+Work6 实际运行环境如下：
+
+| 项目 | 版本 / 说明 |
+| --- | --- |
+| Platform | ModelScope DSW GPU Notebook |
+| GPU | NVIDIA A10 |
+| Python | 3.11 |
+| PyTorch | 2.9.1 + CUDA 12.8 |
+| PyTorch3D | 0.7.9 |
+
+在 Notebook 中安装依赖：
+
+```bash
+pip install --upgrade pip
+pip install fvcore iopath matplotlib ninja imageio trimesh tqdm pandas
+pip install "git+https://gitee.com/hongwenzhang/pytorch3d.git" --no-build-isolation
+```
+
+该部分主要用于可微渲染实验，和 Work1–Work5 的本地 Taichi / Vulkan 运行方式有所区别。
 
 <p align="right"><a href="#toc">回到目录 ↑</a></p>
 
@@ -491,6 +557,32 @@ python -u "src/work5/AntiAliasingMSAA.py"
 
 该实验用于观察主光线、阴影射线、反射射线、折射射线和多重采样抗锯齿效果。
 
+<a id="section-5-6"></a>
+
+### 5.6 Work6 运行说明
+
+Work6 使用 PyTorch3D 和 CUDA 环境，推荐在 ModelScope DSW GPU Notebook 中运行。
+
+低难度剪影优化：
+
+```text
+src/work6/work6_low_silhouette.ipynb
+```
+
+主实验 Notebook：
+
+```text
+src/work6/work6_differentiable_rendering.ipynb
+```
+
+真实纹理牛拟合：
+
+```text
+src/work6/work6_true_textured_fit.ipynb
+```
+
+该实验用于观察可微渲染如何将二维剪影、RGB 图像和纹理监督反向传播到三维网格顶点，从而实现从球体到目标奶牛模型的优化过程。
+
 <p align="right"><a href="#toc">回到目录 ↑</a></p>
 
 <a id="section-6"></a>
@@ -546,6 +638,7 @@ assets/
 ├── work3/        # Work3 演示资源：Bezier 曲线、反走样、B-Spline 对比
 ├── work4/        # Work4 演示资源：Phong、Blinn-Phong、Hard Shadow
 ├── work5/        # Work5 演示资源：光线追踪、玻璃折射、MSAA
+├── work6/        # Work6 演示资源：可微渲染、剪影优化、RGB 优化、纹理拟合
 └── ssh_set.png   # SSH 配置记录截图
 ```
 
@@ -553,6 +646,7 @@ assets/
 
 ```text
 ../../assets/work5/task1_scene.png
+../../assets/work6/texture_fit_optimization.gif
 ```
 
 这种组织方式可以避免图片散落在源码目录中，也能让每个实验的代码、文档和可视化资源保持一一对应。
@@ -581,6 +675,16 @@ assets/
 
 4. 统一使用 badge、目录跳转、图片表格、回到目录链接等格式，使 GitHub 页面更加清晰、美观、易读。
 
+到 **2026 年 5 月 14 日**，仓库进一步补充了 `work6` 可微渲染实验，主要包括：
+
+1. 新增 `src/work6/`，整理低难度剪影优化、高难度 RGB 联合优化、真实纹理牛拟合和正则化消融实验。
+
+2. 新增 `assets/work6/`，保存可微渲染过程 GIF、目标图像、Loss 曲线、消融对比图和云端 Notebook 运行记录。
+
+3. 在根目录 README 中补充 Work6 导航、可视化预览、运行说明和 PyTorch3D / ModelScope 环境说明。
+
+4. 保持 `src/workX/` 与 `assets/workX/` 的统一组织方式，使 Work6 与前五个实验在仓库结构和文档风格上保持一致。
+
 经过这些整理后，本仓库已经形成比较稳定的课程实验组织方式，后续新增实验可以继续沿用当前结构。
 
 <p align="right"><a href="#toc">回到目录 ↑</a></p>
@@ -603,6 +707,14 @@ git push origin master:main
 ```bash
 git add -A src/work4 assets/work4
 git commit -m "polish work4 lighting documentation and visuals"
+git push origin master:main
+```
+
+如果只提交某一个实验，例如 Work6：
+
+```bash
+git add -A src/work6 assets/work6
+git commit -m "add work6 differentiable rendering experiment"
 git push origin master:main
 ```
 
@@ -709,5 +821,7 @@ git remote set-url origin https://github.com/zxy6688/CG-Lab.git
 本仓库主要用于整理计算机图形学课程实验，包括实验代码、运行说明、数学原理、可视化结果和 GitHub 提交记录。仓库内容不仅用于课程作业提交，也作为后续复习图形学基础知识和整理个人项目经验的材料。
 
 从内容上看，本仓库覆盖了从图形学工程环境搭建，到 MVP 变换、曲线绘制、局部光照、阴影、反射、折射和抗锯齿等多个主题。每个实验都尽量做到代码可运行、文档可阅读、效果可展示，使整个项目既能作为课程实验仓库，也能作为个人图形学学习过程的记录。
+
+新增的 Work6 进一步补充了可微渲染主题，使仓库内容从传统实时渲染、曲线建模和光线追踪扩展到基于深度学习框架的三维网格反演与优化。
 
 <p align="right"><a href="#toc">回到目录 ↑</a></p>
