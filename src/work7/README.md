@@ -3,9 +3,9 @@
 <br>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Python-3.12-blue?style=for-the-badge&logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/Python-3.13-blue?style=for-the-badge&logo=python&logoColor=white" alt="Python">
   <img src="https://img.shields.io/badge/Taichi-GGUI-orange?style=for-the-badge" alt="Taichi">
-  <img src="https://img.shields.io/badge/Work7-Mass%20Spring%20System-00AEEF?style=for-the-badge" alt="Work7">
+  <img src="https://img.shields.io/badge/work7-Mass%20Spring%20System-00AEEF?style=for-the-badge" alt="work7">
   <img src="https://img.shields.io/badge/Simulation-Cloth%20Physics-purple?style=for-the-badge" alt="Simulation">
   <img src="https://img.shields.io/badge/Status-Completed-brightgreen?style=for-the-badge" alt="Status">
 </p>
@@ -17,7 +17,7 @@
 </p>
 
 <p align="center">
-  <img src="../../assets/work7/work7_overview.gif" alt="Work7 Mass Spring System Overview" width="820">
+  <img src="../../assets/work7/work7_overview.gif" alt="work7 Mass Spring System Overview" width="820">
 </p>
 
 <p align="center">
@@ -192,17 +192,12 @@ CG-Lab/
 │       └── optional_collision_explicit_explosive.gif  # 选做二：显式欧拉碰撞反例演示
 │
 ├── src/
-│   └── Work7/
+│   └── work7/
 │       ├── README.md                                  # 实验七说明文档
 │       ├── test.py                                    # 老师教程参考实现，用于环境验证与基础效果复现
 │       ├── main.py                                    # 基础任务：三种积分方法与阻尼对比
 │       ├── optional_springs.py                        # 选做一：剪切弹簧与弯曲弹簧
 │       └── optional_collision.py                      # 选做二：球体碰撞
-│
-├── .gitignore                                         # Git 忽略规则
-├── pyproject.toml                                     # uv 项目配置文件
-├── uv.lock                                            # uv 依赖锁定文件
-└── README.md                                          # 仓库总说明文档
 ```
 
 其中，`test.py` 保存老师教程中的参考实现，主要用于验证 Taichi 环境、GGUI 窗口、三种积分方法和基础质点弹簧系统是否能够正常运行。正式展示与扩展实现主要放在 `main.py`、`optional_springs.py` 和 `optional_collision.py` 中。
@@ -223,23 +218,23 @@ CG-Lab/
 | 编程语言 | Python |
 | 图形框架 | Taichi GGUI |
 | 推荐运行方式 | `uv run python ...` |
-| 教程参考入口 | `src/Work7/test.py` |
-| 基础任务入口 | `src/Work7/main.py` |
-| 选做一入口 | `src/Work7/optional_springs.py` |
-| 选做二入口 | `src/Work7/optional_collision.py` |
+| 教程参考入口 | `src/work7/test.py` |
+| 基础任务入口 | `src/work7/main.py` |
+| 选做一入口 | `src/work7/optional_springs.py` |
+| 选做二入口 | `src/work7/optional_collision.py` |
 
 <a id="section-3-1"></a>
 
 ### 3.1 老师教程参考实现
 
 ```bash
-uv run python src/Work7/test.py
+uv run python src/work7/test.py
 ```
 
 如果不使用 `uv`，也可以运行：
 
 ```bash
-python src/Work7/test.py
+python src/work7/test.py
 ```
 
 该文件对应老师教程中的参考实现，用于确认环境配置、Taichi GGUI 窗口和基础质点弹簧系统能够正常启动。正式展示与扩展效果主要通过后续三个文件完成。
@@ -249,7 +244,7 @@ python src/Work7/test.py
 ### 3.2 基础质点弹簧系统
 
 ```bash
-uv run python src/Work7/main.py
+uv run python src/work7/main.py
 ```
 
 该版本完成实验七基础任务，包括结构弹簧布料、显式欧拉、半隐式欧拉、隐式欧拉、阻尼参数切换、暂停和重置等交互功能。
@@ -259,7 +254,7 @@ uv run python src/Work7/main.py
 ### 3.3 选做一：弹簧拓扑增强
 
 ```bash
-uv run python src/Work7/optional_springs.py
+uv run python src/work7/optional_springs.py
 ```
 
 该版本用于对比两类弹簧拓扑：
@@ -276,7 +271,7 @@ uv run python src/Work7/optional_springs.py
 ### 3.4 选做二：球体碰撞
 
 ```bash
-uv run python src/Work7/optional_collision.py
+uv run python src/work7/optional_collision.py
 ```
 
 该版本在布料场景中加入红色球体，并在每次物理更新时检查蓝色布料质点与球体之间的碰撞关系。
@@ -309,7 +304,7 @@ uv run python src/Work7/optional_collision.py
 ### 4.1 基础布料动态总览
 
 <p align="center">
-  <img src="../../assets/work7/work7_overview.gif" alt="Work7 Overview GIF" width="820">
+  <img src="../../assets/work7/work7_overview.gif" alt="work7 Overview GIF" width="820">
 </p>
 
 <p align="center">
@@ -515,21 +510,21 @@ uv run python src/Work7/optional_collision.py
 
 质点弹簧模型将布料离散为规则网格。设布料分辨率为 `N × N`，则共有：
 
-$$
-N^2
-$$
+<p align="center">
+  <img src="https://latex.codecogs.com/svg.image?N^2" alt="N squared">
+</p>
 
 个质点。本实验基础版本中：
 
-$$
-N = 20
-$$
+<p align="center">
+  <img src="https://latex.codecogs.com/svg.image?N=20" alt="N equals 20">
+</p>
 
 因此共有：
 
-$$
-20 \times 20 = 400
-$$
+<p align="center">
+  <img src="https://latex.codecogs.com/svg.image?20\times20=400" alt="20 times 20 equals 400">
+</p>
 
 个布料质点。
 
@@ -552,45 +547,27 @@ $$
 
 设两个相连质点分别为 `a` 和 `b`，位置分别为：
 
-$$
-\mathbf{x}_a,\ \mathbf{x}_b
-$$
+<p align="center">
+  <img src="https://latex.codecogs.com/svg.image?\mathbf{x}_a,\quad\mathbf{x}_b" alt="particle positions">
+</p>
 
 当前弹簧长度为：
 
-$$
-\left\|
-\mathbf{x}_a-\mathbf{x}_b
-\right\|
-$$
+<p align="center">
+  <img src="https://latex.codecogs.com/svg.image?\left\|\mathbf{x}_a-\mathbf{x}_b\right\|" alt="spring current length">
+</p>
 
 弹簧原长为：
 
-$$
-l
-$$
+<p align="center">
+  <img src="https://latex.codecogs.com/svg.image?l" alt="rest length">
+</p>
 
 根据胡克定律，弹簧施加在质点 `a` 上的力为：
 
-$$
-\mathbf{f}_{a}
-=
--k_s
-\left(
-\left\|
-\mathbf{x}_a-\mathbf{x}_b
-\right\|
--
-l
-\right)
-\frac{
-\mathbf{x}_a-\mathbf{x}_b
-}{
-\left\|
-\mathbf{x}_a-\mathbf{x}_b
-\right\|
-}
-$$
+<p align="center">
+  <img src="https://latex.codecogs.com/svg.image?\mathbf{f}_a=-k_s\left(\left\|\mathbf{x}_a-\mathbf{x}_b\right\|-l\right)\frac{\mathbf{x}_a-\mathbf{x}_b}{\left\|\mathbf{x}_a-\mathbf{x}_b\right\|}" alt="spring force">
+</p>
 
 其中：
 
@@ -609,11 +586,9 @@ $$
 
 仅有弹簧力时，系统容易持续振荡，数值误差也可能导致能量不断增加。为了让系统逐渐稳定，本实验加入阻尼力：
 
-$$
-\mathbf{f}_{d}
-=
--k_d\mathbf{v}
-$$
+<p align="center">
+  <img src="https://latex.codecogs.com/svg.image?\mathbf{f}_d=-k_d\mathbf{v}" alt="damping force">
+</p>
 
 其中 `k_d` 是阻尼系数，`v` 是质点速度。阻尼力方向与速度方向相反，因此可以削弱运动速度并消耗系统能量。
 
@@ -631,77 +606,51 @@ max_velocity = 50.0
 
 质点加速度由牛顿第二定律得到：
 
-$$
-\mathbf{a}
-=
-\frac{\mathbf{F}}{m}
-$$
+<p align="center">
+  <img src="https://latex.codecogs.com/svg.image?\mathbf{a}=\frac{\mathbf{F}}{m}" alt="Newton second law">
+</p>
 
 在离散时间步长：
 
-$$
-\Delta t
-$$
+<p align="center">
+  <img src="https://latex.codecogs.com/svg.image?\Delta t" alt="delta t">
+</p>
 
 内，需要通过数值积分更新质点速度与位置。
 
 **显式欧拉** 使用当前时刻速度和加速度更新下一时刻状态：
 
-$$
-\mathbf{x}_{t+1}
-=
-\mathbf{x}_{t}
-+
-\mathbf{v}_{t}\Delta t
-$$
+<p align="center">
+  <img src="https://latex.codecogs.com/svg.image?\mathbf{x}_{t+1}=\mathbf{x}_{t}+\mathbf{v}_{t}\Delta t" alt="explicit euler position">
+</p>
 
-$$
-\mathbf{v}_{t+1}
-=
-\mathbf{v}_{t}
-+
-\mathbf{a}_{t}\Delta t
-$$
+<p align="center">
+  <img src="https://latex.codecogs.com/svg.image?\mathbf{v}_{t+1}=\mathbf{v}_{t}+\mathbf{a}_{t}\Delta t" alt="explicit euler velocity">
+</p>
 
 显式欧拉计算简单，但在弹簧刚度较大时容易不稳定。
 
 **半隐式欧拉** 先更新速度，再用更新后的速度更新位置：
 
-$$
-\mathbf{v}_{t+1}
-=
-\mathbf{v}_{t}
-+
-\mathbf{a}_{t}\Delta t
-$$
+<p align="center">
+  <img src="https://latex.codecogs.com/svg.image?\mathbf{v}_{t+1}=\mathbf{v}_{t}+\mathbf{a}_{t}\Delta t" alt="semi implicit euler velocity">
+</p>
 
-$$
-\mathbf{x}_{t+1}
-=
-\mathbf{x}_{t}
-+
-\mathbf{v}_{t+1}\Delta t
-$$
+<p align="center">
+  <img src="https://latex.codecogs.com/svg.image?\mathbf{x}_{t+1}=\mathbf{x}_{t}+\mathbf{v}_{t+1}\Delta t" alt="semi implicit euler position">
+</p>
 
 半隐式欧拉在物理模拟中更稳定，是实时布料仿真的常用方法。
 
 **隐式欧拉** 使用未来时刻的状态进行更新：
 
-$$
-\mathbf{v}_{t+1}
-=
-\mathbf{v}_{t}
-+
-\mathbf{a}_{t+1}\Delta t
-$$
+<p align="center">
+  <img src="https://latex.codecogs.com/svg.image?\mathbf{v}_{t+1}=\mathbf{v}_{t}+\mathbf{a}_{t+1}\Delta t" alt="implicit euler velocity">
+</p>
 
-$$
-\mathbf{x}_{t+1}
-=
-\mathbf{x}_{t}
-+
-\mathbf{v}_{t+1}\Delta t
-$$
+<p align="center">
+  <img src="https://latex.codecogs.com/svg.image?\mathbf{x}_{t+1}=\mathbf{x}_{t}+\mathbf{v}_{t+1}\Delta t" alt="implicit euler position">
+</p>
 
 本实验通过多次定点迭代近似求解隐式欧拉，使模拟更具阻尼效果。
 
@@ -725,54 +674,39 @@ $$
 
 球体碰撞选做中，每个布料质点都会与球体进行距离检测。设质点位置为：
 
-$$
-\mathbf{x}_i
-$$
+<p align="center">
+  <img src="https://latex.codecogs.com/svg.image?\mathbf{x}_i" alt="particle position">
+</p>
 
 球心为：
 
-$$
-\mathbf{c}
-$$
+<p align="center">
+  <img src="https://latex.codecogs.com/svg.image?\mathbf{c}" alt="sphere center">
+</p>
 
 球半径为：
 
-$$
-r
-$$
+<p align="center">
+  <img src="https://latex.codecogs.com/svg.image?r" alt="sphere radius">
+</p>
 
 则质点到球心的距离为：
 
-$$
-d_i
-=
-\left\|
-\mathbf{x}_i-\mathbf{c}
-\right\|
-$$
+<p align="center">
+  <img src="https://latex.codecogs.com/svg.image?d_i=\left\|\mathbf{x}_i-\mathbf{c}\right\|" alt="distance to sphere center">
+</p>
 
 当：
 
-$$
-d_i < r
-$$
+<p align="center">
+  <img src="https://latex.codecogs.com/svg.image?d_i<r" alt="collision condition">
+</p>
 
 说明质点进入球体内部，需要将其投影回球面：
 
-$$
-\mathbf{x}_i
-=
-\mathbf{c}
-+
-r
-\frac{
-\mathbf{x}_i-\mathbf{c}
-}{
-\left\|
-\mathbf{x}_i-\mathbf{c}
-\right\|
-}
-$$
+<p align="center">
+  <img src="https://latex.codecogs.com/svg.image?\mathbf{x}_i=\mathbf{c}+r\frac{\mathbf{x}_i-\mathbf{c}}{\left\|\mathbf{x}_i-\mathbf{c}\right\|}" alt="sphere projection">
+</p>
 
 同时，程序会计算速度在球面法线方向上的分量。如果该分量朝向球体内部，则将其去除，避免质点下一步继续穿入球体。
 
