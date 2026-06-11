@@ -10,6 +10,25 @@
   <img src="https://img.shields.io/badge/Status-Completed-brightgreen?style=for-the-badge" alt="Status">
 </p>
 
+<div align="center">
+
+<table>
+  <tr>
+    <td><strong>姓名</strong></td>
+    <td>周欣源</td>
+  </tr>
+  <tr>
+    <td><strong>学号</strong></td>
+    <td>202311260012</td>
+  </tr>
+  <tr>
+    <td><strong>专业</strong></td>
+    <td>计算机科学与技术</td>
+  </tr>
+</table>
+
+</div>
+
 <br>
 
 <a id="toc"></a>
