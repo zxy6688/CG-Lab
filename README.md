@@ -15,6 +15,25 @@
   A Taichi-based computer graphics lab repository covering particle simulation, MVP transformation, Bézier curves, Phong lighting, Whitted-style ray tracing, differentiable rendering, mass-spring cloth simulation, and a planned LBS skinning experiment.
 </p>
 
+<div align="center">
+
+<table>
+  <tr>
+    <td><strong>姓名</strong></td>
+    <td>周欣源</td>
+  </tr>
+  <tr>
+    <td><strong>学号</strong></td>
+    <td>202311260012</td>
+  </tr>
+  <tr>
+    <td><strong>专业</strong></td>
+    <td>计算机科学与技术</td>
+  </tr>
+</table>
+
+</div>
+
 <br>
 
 本仓库用于整理 **计算机图形学课程实验** 的代码、实验说明文档与可视化展示资源。项目主要基于 **Python + Taichi** 实现，同时在 `work6` 中使用 **PyTorch3D + CUDA** 完成可微渲染实验，在 `work7` 中使用 **Taichi GGUI** 完成质点弹簧布料仿真。仓库采用统一的 `src/workX` 源码结构与 `assets/workX` 资源结构，便于后续维护、展示和提交课程作业。
