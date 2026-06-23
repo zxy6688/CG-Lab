@@ -1,0 +1,21 @@
+Computer Graphics Experiment 8: SMPL LBS
+
+[Model Information]
+model_file: models/smpl/SMPL_NEUTRAL.pkl
+num_vertices: 6890
+num_faces: 13776
+num_joints: 24
+num_betas: 10
+
+[Manual LBS vs Official SMPL Forward]
+mean_absolute_error: 0.0000000000e+00
+max_absolute_error: 0.0000000000e+00
+
+[Generated Figures]
+assets/work8/stage_a_template_weights.png
+assets/work8/all_joint_weights.png
+assets/work8/stage_b_shaped_joints.png
+assets/work8/shape_offsets.png
+assets/work8/stage_c_pose_offsets.png
+assets/work8/stage_d_lbs_result.png
+assets/work8/comparison_grid.png

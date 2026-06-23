@@ -1,0 +1,8 @@
+numpy==1.23.5
+scipy==1.10.1
+torch==2.12.1
+smplx==0.1.28
+matplotlib==3.10.9
+imageio==2.37.3
+pillow==12.2.0
+chumpy==0.70

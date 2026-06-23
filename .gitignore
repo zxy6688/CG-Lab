@@ -8,3 +8,8 @@ wheels/
 
 # Virtual environments
 .venv
+
+.venv-work8/
+
+# Licensed SMPL model files: keep local, do not commit
+models/smpl/*.pkl
