@@ -8,11 +8,11 @@
   <img src="https://img.shields.io/badge/Backend-Vulkan-green?style=for-the-badge" alt="Backend">
   <img src="https://img.shields.io/badge/Package-uv-purple?style=for-the-badge" alt="uv">
   <img src="https://img.shields.io/badge/works-1--8-brightgreen?style=for-the-badge" alt="works">
-  <img src="https://img.shields.io/badge/Completed-7%2F8-success?style=for-the-badge" alt="Completed">
+  <img src="https://img.shields.io/badge/Completed-8%2F8-success?style=for-the-badge" alt="Completed">
 </p>
 
 <p align="center">
-  A Taichi-based computer graphics lab repository covering particle simulation, MVP transformation, Bézier curves, Phong lighting, Whitted-style ray tracing, differentiable rendering, mass-spring cloth simulation, and a planned LBS skinning experiment.
+  A computer graphics lab repository covering particle simulation, MVP transformation, Bézier curves, Phong lighting, Whitted-style ray tracing, differentiable rendering, mass-spring cloth simulation, and SMPL-based Linear Blend Skinning.
 </p>
 
 <div align="center">
@@ -36,9 +36,9 @@
 
 <br>
 
-本仓库用于整理 **计算机图形学课程实验** 的代码、实验说明文档与可视化展示资源。项目主要基于 **Python + Taichi** 实现，同时在 `work6` 中使用 **PyTorch3D + CUDA** 完成可微渲染实验，在 `work7` 中使用 **Taichi GGUI** 完成质点弹簧布料仿真。仓库采用统一的 `src/workX` 源码结构与 `assets/workX` 资源结构，便于后续维护、展示和提交课程作业。
+本仓库用于整理 **计算机图形学课程实验** 的代码、实验说明文档与可视化展示资源。项目主要基于 **Python + Taichi** 实现，同时在 `work6` 中使用 **PyTorch3D + CUDA** 完成可微渲染实验，在 `work7` 中使用 **Taichi GGUI** 完成质点弹簧布料仿真，在 `work8` 中使用 **PyTorch + SMPL** 完成 Shape Blend Shapes、Pose Corrective 与 Linear Blend Skinning 实验。仓库采用统一的 `src/workX` 源码结构与 `assets/workX` 资源结构，便于后续维护、展示和提交课程作业。
 
-目前课程一共有 **8 个实验**，其中 **work1–work7 已完成** 并整理到仓库中，**work8 为 LBS 蒙皮 / Linear Blend Skinning 实验**，计划在期末考试之后完成，并继续沿用当前 README 与资源组织规范。
+目前课程一共有 **8 个实验**，其中 **work1–work8 均已完成** 并整理到仓库中。`work8` 基于 SMPL neutral 模型，完整拆解并验证了从模板网格、形状校正、姿态相关校正到最终 LBS 蒙皮的前向过程。
 
 <a id="toc"></a>
 
@@ -78,7 +78,7 @@
   * [4.2 Taichi 后端说明](#section-4-2)
   * [4.3 PyTorch3D 与云端 GPU 说明](#section-4-3)
   * [4.4 work7 Taichi GGUI 说明](#section-4-4)
-  * [4.5 work8 LBS 蒙皮预期环境](#section-4-5)
+  * [4.5 work8 SMPL LBS 专用环境](#section-4-5)
 
 </details>
 
@@ -94,7 +94,7 @@
   * [5.5 work5 运行命令](#section-5-5)
   * [5.6 work6 运行说明](#section-5-6)
   * [5.7 work7 运行命令](#section-5-7)
-  * [5.8 work8 计划说明](#section-5-8)
+  * [5.8 work8 LBS 蒙皮运行命令](#section-5-8)
 
 </details>
 
@@ -147,6 +147,13 @@
 
 </details>
 
+<details open>
+<summary><strong>十三、课程实验完结撒花与致谢</strong></summary>
+
+* [十三、课程实验完结撒花与致谢](#section-13)
+
+</details>
+
 <a id="section-1"></a>
 
 ## 一、实验总览
@@ -155,7 +162,7 @@
 
 ### 1.1 实验导航表
 
-当前仓库已经整理了七个实验，并预留第八个实验。每个已完成实验都配套独立源码目录、展示资源目录和子 README 文档。`work8` 为后续 LBS 蒙皮实验，计划在期末之后完成。
+当前仓库已经整理完成八个实验。每个实验均配套独立源码目录、展示资源目录和子 README 文档。`work8` 基于 SMPL neutral 模型，完整实现模板网格与蒙皮权重、Shape Blend Shapes、关节回归、Pose Corrective、Forward Kinematics、手写 Linear Blend Skinning 与官方前向一致性验证。
 
 | 实验编号  | 实验名称       | 关键词                                                             | 子 README                           |
 | ----- | ---------- | --------------------------------------------------------------- | ---------------------------------- |
@@ -166,7 +173,7 @@
 | work5 | 光线追踪       | Ray Tracing、反射、硬阴影、玻璃折射、MSAA                                    | [进入 work5 文档](src/work5/README.md) |
 | work6 | 可微渲染       | PyTorch3D、Soft Rasterization、Silhouette、RGB、Texture Fitting     | [进入 work6 文档](src/work6/README.md) |
 | work7 | 质点弹簧模型     | Mass-Spring System、Cloth Simulation、Euler Integration、Collision | [进入 work7 文档](src/work7/README.md) |
-| work8 | LBS 蒙皮     | SMPL、Linear Blend Skinning、Shape、Pose、Skinning Weights          | 期末后完成                              |
+| work8 | LBS 蒙皮     | SMPL、Linear Blend Skinning、Shape Blend Shapes、Pose Corrective、Skinning Weights | [进入 work8 文档](src/work8/README.md) |
 
 <a id="section-1-2"></a>
 
@@ -225,7 +232,7 @@
       <strong>work8</strong><br>
       LBS 蒙皮<br>
       Linear Blend Skinning<br>
-      <span>期末后完成</span>
+      <a href="src/work8/README.md">查看文档</a>
     </td>
   </tr>
 </table>
@@ -243,9 +250,9 @@
 | work5 | ✅    | ✅    | ✅      | ✅     |
 | work6 | ✅    | ✅    | ✅      | ✅     |
 | work7 | ✅    | ✅    | ✅      | ✅     |
-| work8 | ⏳    | ⏳    | ⏳      | ⏳     |
+| work8 |  —    | ✅   | ✅      | ✅     |
 
-说明：`work8` 为 LBS 蒙皮实验，计划在期末之后完成；当前根目录 README 已预留导航和后续维护位置，避免后续新增实验时再次大规模调整结构。
+说明：`work8` 已完成基于 SMPL 的 Linear Blend Skinning 实验，包含模型加载、模板权重可视化、Shape Blend Shapes、关节回归、Pose Corrective、手写 LBS、四阶段总览以及与官方 SMPL 前向结果的一致性验证。
 
 <p align="right"><a href="#toc">回到目录 ↑</a></p>
 
@@ -253,7 +260,7 @@
 
 ## 二、可视化预览
 
-下面按照 **3 × 3** 的形式统一展示课程实验预览。前七项为已完成实验的代表性效果图，第八项为 `work8` 占位，最后一项为“更多实验说明”导航入口。
+下面按照 **3 × 3** 的形式统一展示课程实验预览。前八项为已完成实验的代表性效果图，最后一项为“更多实验说明”导航入口。
 
 <table align="center">
   <tr>
@@ -293,9 +300,10 @@
     </td>
     <td width="33.33%" align="center" valign="top">
       <strong>work8 LBS 蒙皮</strong><br><br>
-      <br>
-      <strong>期末后完成</strong><br>
-      <sub>SMPL · LBS · Skinning</sub><br><br><br><br><br><br>
+      <a href="src/work8/README.md">
+        <img src="assets/work8/comparison_grid.png" alt="work8 SMPL LBS pipeline" width="250">
+      </a><br><br>
+      <a href="src/work8/README.md">查看文档</a>
     </td>
     <td width="33.33%" align="center" valign="top">
       <strong>更多实验说明</strong><br><br>
@@ -311,9 +319,9 @@
 
 说明：
 
-1. `work1`–`work7` 展示当前仓库中最具代表性的 GIF 或实验结果图。
+1. `work1`–`work8` 展示当前仓库中最具代表性的 GIF、PNG 或实验结果图。
 
-2. `work8` 目前尚未完成，因此在预览区中保留占位卡片，后续完成后会替换为真实效果图。
+2. `work8` 展示 SMPL 模型经过 Shape Blend Shapes、Pose Corrective 和 Linear Blend Skinning 后得到的四阶段流程总览；点击图片或“查看文档”可进入完整实验说明。
 
 3. 如果想进一步查看某个实验的任务说明、数学原理、实现细节与更多可视化结果，请进入各实验子 `README.md`。
 
@@ -335,7 +343,17 @@ CG-Lab/
 │   ├── work5/                         # work5 可视化资源：光线追踪、玻璃折射、MSAA 效果图
 │   ├── work6/                         # work6 可视化资源：可微渲染、剪影优化、RGB 优化、纹理拟合
 │   ├── work7/                         # work7 可视化资源：质点弹簧、积分对比、弹簧拓扑、球体碰撞
+│   ├── work8/                         # work8 可视化资源：SMPL 权重、shape、pose、LBS 与官方验证记录
 │   └── ssh_set.png                    # SSH 配置说明截图
+│
+├── models/
+│   └── smpl/
+│       ├── README.md                   # SMPL 模型文件获取与放置说明
+│       └── SMPL_NEUTRAL.pkl            # 本地模型文件，不提交 Git
+│
+├── outputs/
+│   └── work8/
+│       └── summary.txt                 # 模型基础信息与官方前向验证误差
 │
 ├── src/
 │   ├── work1/
@@ -386,12 +404,29 @@ CG-Lab/
 │   │   ├── output_meshes/                         # 最终输出的 .obj 模型
 │   │   └── README.md                              # work6 实验说明文档
 │   │
-│   └── work7/
-│       ├── README.md                              # work7 实验说明文档
-│       ├── test.py                                # 老师教程参考实现，用于环境验证与基础效果复现
-│       ├── main.py                                # 基础任务：三种积分方法与阻尼对比
-│       ├── optional_springs.py                    # 选做一：剪切弹簧与弯曲弹簧
-│       └── optional_collision.py                  # 选做二：球体碰撞
+│   ├── work7/
+│   │   ├── README.md                              # work7 实验说明文档
+│   │   ├── test.py                                # 老师教程参考实现，用于环境验证与基础效果复现
+│   │   ├── main.py                                # 基础任务：三种积分方法与阻尼对比
+│   │   ├── optional_springs.py                    # 选做一：剪切弹簧与弯曲弹簧
+│   │   └── optional_collision.py                  # 选做二：球体碰撞
+│   │
+│   └── work8/
+│       ├── __init__.py                            # Work8 Python package 标记文件
+│       ├── config.py                              # 模型路径、输出路径、关节名称等全局配置
+│       ├── smpl_loader.py                         # SMPL neutral 模型加载逻辑
+│       ├── smpl_math.py                           # Shape、pose corrective、LBS 核心计算
+│       ├── visualization.py                       # 网格、热力图、骨架和总对比图绘制
+│       ├── task1_model_info.py                    # Task 1：模型基础信息
+│       ├── task2_template_weights.py              # Task 2：模板网格与蒙皮权重
+│       ├── task3_shape_joints.py                  # Task 3：形状校正与关节回归
+│       ├── task4_pose_correctives.py              # Task 4：姿态相关校正
+│       ├── task5_lbs_result.py                    # Task 5：手写 Linear Blend Skinning
+│       ├── task6_comparison.py                    # Task 6：四阶段总对比图
+│       ├── task7_validation.py                    # Task 7：官方前向一致性验证
+│       ├── run_all.py                             # 顺序运行全部任务
+│       ├── requirements.txt                       # Work8 专用兼容环境依赖
+│       └── README.md                              # work8 实验说明文档
 │
 ├── .gitignore                         # Git 忽略规则，排除 .venv、缓存文件和本地临时文件
 ├── pyproject.toml                     # uv 项目配置与依赖声明
@@ -407,9 +442,9 @@ CG-Lab/
 
 3. 每个实验都采用 `workX` 命名，保证代码目录与资源目录一一对应。
 
-4. `work8` 目前尚未创建正式目录，期末之后完成 LBS 蒙皮实验时将新增 `src/work8/` 和 `assets/work8/`。
+4. `work8` 已完成 SMPL LBS 蒙皮实验，源码位于 `src/work8/`，可视化资源位于 `assets/work8/`，模型基础信息和官方验证误差位于 `outputs/work8/summary.txt`。
 
-5. `.gitignore`、`pyproject.toml` 和 `uv.lock` 均需要保留；`.venv/`、`__pycache__/`、`.pyc`、`imgui.ini` 和本地临时运行文件不应提交到仓库。
+5. `.gitignore`、`pyproject.toml` 和 `uv.lock` 均需要保留；`.venv/`、`.venv-work8/`、`__pycache__/`、`.pyc`、`imgui.ini`、`models/smpl/SMPL_NEUTRAL.pkl` 和本地临时运行文件不应提交到仓库。
 
 <p align="right"><a href="#toc">回到目录 ↑</a></p>
 
@@ -509,22 +544,60 @@ pip install "git+https://gitee.com/hongwenzhang/pytorch3d.git" --no-build-isolat
 
 <a id="section-4-5"></a>
 
-### 4.5 work8 LBS 蒙皮预期环境
+### 4.5 work8 SMPL LBS 专用环境
 
-`work8` 计划基于 SMPL 模型完成 LBS 蒙皮实验。该实验预计需要使用 PyTorch、`smplx`、`numpy`、`trimesh`、`matplotlib` 或其他三维可视化工具，并读取 `SMPL_NEUTRAL.pkl` 模型文件。
+`work8` 基于 SMPL neutral 模型完成模板网格、Shape Blend Shapes、Pose Corrective、Forward Kinematics 与 Linear Blend Skinning 的完整拆解。
 
-`work8` 完成后预计输出：
+由于本实验使用的 `SMPL_NEUTRAL.pkl` 是较早版本的 SMPL pickle 文件，加载时依赖 `chumpy`；而 `chumpy` 与新版 Python、NumPy 的兼容性有限，因此 `work8` 使用独立的 `.venv-work8` 环境，不影响仓库主环境和其他 Taichi 实验。
 
-```text
-outputs/stage_a_template_weights.png
-outputs/stage_b_shaped_joints.png
-outputs/stage_c_pose_offsets.png
-outputs/stage_d_lbs_result.png
-outputs/comparison_grid.png
-outputs/summary.txt
+`work8` 实际运行环境如下：
+
+| 项目 | 版本 / 说明 |
+| --- | --- |
+| Python | 3.10.20 |
+| NumPy | 1.23.5 |
+| SciPy | 1.10.1 |
+| PyTorch | 2.12.1 + CPU |
+| smplx | 0.1.28 |
+| chumpy | 0.70 |
+| Matplotlib | 3.10.9 |
+
+创建 Work8 专用环境：
+
+```bat
+uv venv .venv-work8 --python 3.10 --seed
 ```
 
-该实验将在期末之后单独整理到 `src/work8/` 和 `assets/work8/` 中。
+安装依赖：
+
+```bat
+uv pip install --python .venv-work8\Scripts\python.exe pip setuptools wheel
+uv pip install --python .venv-work8\Scripts\python.exe numpy==1.23.5 scipy==1.10.1 torch smplx==0.1.28 matplotlib imageio pillow
+uv pip install --python .venv-work8\Scripts\python.exe chumpy==0.70 --no-build-isolation
+```
+
+模型文件需自行放置于：
+
+```text
+models/smpl/SMPL_NEUTRAL.pkl
+```
+
+该模型文件受原始 SMPL 许可证约束，不会提交到 Git 仓库。具体说明见：
+
+```text
+models/smpl/README.md
+```
+
+`work8` 主要输出包括：
+
+```text
+assets/work8/stage_a_template_weights.png
+assets/work8/stage_b_shaped_joints.png
+assets/work8/stage_c_pose_offsets.png
+assets/work8/stage_d_lbs_result.png
+assets/work8/comparison_grid.png
+outputs/work8/summary.txt
+```
 
 <p align="right"><a href="#toc">回到目录 ↑</a></p>
 
@@ -716,17 +789,63 @@ uv run python src/work7/optional_collision.py
 
 <a id="section-5-8"></a>
 
-### 5.8 work8 计划说明
+### 5.8 work8 LBS 蒙皮运行命令
 
-`work8` 为 LBS 蒙皮实验，计划在期末之后完成。预计主要运行内容包括：
+`work8` 使用独立的 Python 3.10 环境运行。所有命令均在项目根目录执行。
 
-```text
-src/work8/main.py
-src/work8/README.md
-assets/work8/
+Task 1：加载 SMPL 并输出模型基础信息：
+
+```bat
+.venv-work8\Scripts\python.exe -m src.work8.task1_model_info
 ```
 
-预计输出包括模板网格与蒙皮权重、形状校正与关节回归、姿态校正、最终 LBS 蒙皮结果和四阶段对比图。完成后将继续更新本总 README 的导航表、可视化预览、运行命令和资源结构。
+Task 2：模板网格与右肩关节蒙皮权重：
+
+```bat
+.venv-work8\Scripts\python.exe -m src.work8.task2_template_weights
+```
+
+Task 3：Shape Blend Shapes 与关节回归：
+
+```bat
+.venv-work8\Scripts\python.exe -m src.work8.task3_shape_joints
+```
+
+Task 4：Pose Corrective Blend Shapes：
+
+```bat
+.venv-work8\Scripts\python.exe -m src.work8.task4_pose_correctives
+```
+
+Task 5：手写 Linear Blend Skinning：
+
+```bat
+.venv-work8\Scripts\python.exe -m src.work8.task5_lbs_result
+```
+
+Task 6：四阶段总对比图：
+
+```bat
+.venv-work8\Scripts\python.exe -m src.work8.task6_comparison
+```
+
+Task 7：手写 LBS 与官方 SMPL 前向验证：
+
+```bat
+.venv-work8\Scripts\python.exe -m src.work8.task7_validation
+```
+
+一键顺序运行全部任务：
+
+```bat
+.venv-work8\Scripts\python.exe -m src.work8.run_all
+```
+
+完整实验说明、每个阶段的可视化结果和误差验证见：
+
+```text
+src/work8/README.md
+```
 
 <p align="right"><a href="#toc">回到目录 ↑</a></p>
 
@@ -774,6 +893,15 @@ assets/work7/integration_methods_compare.gif
 assets/work7/optional_collision_main.gif
 ```
 
+`work8` 的静态可视化结果、环境验证截图和终端验证记录统一保存在 `assets/work8/` 中，例如：
+
+```text
+assets/work8/stage_a_template_weights.png
+assets/work8/stage_c_pose_offsets.png
+assets/work8/stage_d_lbs_result.png
+assets/work8/comparison_grid.png
+```
+
 <p align="right"><a href="#toc">回到目录 ↑</a></p>
 
 <a id="section-7"></a>
@@ -791,6 +919,7 @@ assets/
 ├── work5/        # work5 演示资源：光线追踪、玻璃折射、MSAA
 ├── work6/        # work6 演示资源：可微渲染、剪影优化、RGB 优化、纹理拟合
 ├── work7/        # work7 演示资源：质点弹簧、积分对比、弹簧拓扑、球体碰撞
+├── work8/        # work8 演示资源：SMPL 权重、shape、pose、LBS 与官方验证记录
 └── ssh_set.png   # SSH 配置记录截图
 ```
 
@@ -800,6 +929,7 @@ assets/
 ../../assets/work5/task1_scene.png
 ../../assets/work6/texture_fit_optimization.gif
 ../../assets/work7/work7_overview.gif
+../../assets/work8/comparison_grid.png
 ```
 
 这种组织方式可以避免图片散落在源码目录中，也能让每个实验的代码、文档和可视化资源保持一一对应。
@@ -848,9 +978,28 @@ assets/
 
 4. 保持 `src/workX/` 与 `assets/workX/` 的统一组织方式，使 `work7` 与前六个实验在仓库结构和文档风格上保持一致。
 
-此外，仓库已预留 `work8` 的整体方向。`work8` 将围绕 LBS 蒙皮展开，预计在期末之后补充 `src/work8/`、`assets/work8/` 和对应 README，并同步更新根目录导航表和可视化预览。
+到 **2026 年 6 月 23 日**，仓库最后补充并完成了 `work8` SMPL Linear Blend Skinning 实验，主要包括：
 
-经过这些整理后，本仓库已经形成比较稳定的课程实验组织方式，后续新增实验可以继续沿用当前结构。
+1. 新增 `src/work8/`，将 SMPL 前向过程拆解为模型加载、模板网格与蒙皮权重、Shape Blend Shapes、关节回归、Pose Corrective、Forward Kinematics、手写 LBS、四阶段总览和官方前向验证七项独立任务。
+
+2. 新增 `assets/work8/`，保存 Python 3.10 兼容环境验证、SMPL 模型信息、单关节权重热力图、主导关节分布、形状变化幅度、姿态相关校正、最终 LBS 结果、四阶段总览图以及完整终端验证记录。
+
+3. 新增 `models/smpl/README.md`，说明 `SMPL_NEUTRAL.pkl` 的获取与放置位置；模型文件本身受许可证约束，仅保留本地，不提交到仓库。
+
+4. 新增 `outputs/work8/summary.txt`，保存模型顶点数、面片数、关节数、shape 参数维度，以及手写 LBS 与官方 SMPL 前向的误差验证结果。
+
+5. 在根目录 README 中同步更新 `work8` 导航、可视化预览、运行命令、资源结构、SMPL 专用环境和实验完成状态。
+
+6. 使用完全相同的 `betas`、`global_orient` 与 `body_pose`，将手写 LBS 与官方 SMPL 前向结果逐顶点比较，最终得到：
+
+```text
+mean_absolute_error: 0.0000000000e+00
+max_absolute_error:  0.0000000000e+00
+```
+
+保持 `src/workX/` 与 `assets/workX/` 的统一组织方式，使 `work8` 与前七个实验在仓库结构、运行逻辑、资源命名和文档风格上保持一致。
+
+经过这些整理后，本仓库已经完成全部八个课程实验，并形成比较稳定、完整且可复现的课程实验组织方式。
 
 <p align="right"><a href="#toc">回到目录 ↑</a></p>
 
@@ -985,7 +1134,7 @@ git remote set-url origin https://github.com/zxy6688/CG-Lab.git
 
 8. 如果某个实验新增选做内容，也应同步更新对应的源码、资源目录、README 和根目录导航表。
 
-9. `work8` 完成时，应同步新增 `src/work8/`、`assets/work8/`、`src/work8/README.md`，并更新本根目录 README 的实验导航、可视化预览、运行命令、项目结构和完成状态。
+9. `work8` 已于 2026 年 6 月 23 日完成，并已同步新增 `src/work8/`、`assets/work8/`、`src/work8/README.md`、`models/smpl/README.md` 和 `outputs/work8/summary.txt`，同时更新了本根目录 README 的实验导航、可视化预览、运行命令、项目结构和完成状态。
 
 <p align="right"><a href="#toc">回到目录 ↑</a></p>
 
@@ -1001,6 +1150,72 @@ git remote set-url origin https://github.com/zxy6688/CG-Lab.git
 
 新增的 `work7` 进一步补充了物理仿真主题，使仓库内容扩展到质点弹簧模型、布料模拟、数值积分稳定性比较、弹簧拓扑增强和球体碰撞处理。
 
-后续 `work8` 将继续补充 LBS 蒙皮主题，进一步覆盖参数化人体模型、SMPL、形状参数、姿态参数、蒙皮权重和线性混合蒙皮等内容。
+期末后最后新增的 `work8` 进一步补充了角色动画与人体蒙皮主题，使仓库内容扩展到参数化人体模型、SMPL、形状参数、姿态参数、蒙皮权重、Pose Corrective、Forward Kinematics 和 Linear Blend Skinning。
 
 <p align="right"><a href="#toc">回到目录 ↑</a></p>
+
+<a id="section-13"></a>
+
+## 十三、课程实验完结撒花与致谢
+
+<br>
+
+<h1 align="center">🎉 CG-Lab · 8 / 8 全部完成！🎉</h1>
+
+<h2 align="center">从第一个 Taichi 粒子窗口，到最后一次 SMPL 验证误差为 0。</h2>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Works-8%2F8-00AEEF?style=for-the-badge" alt="Works 8/8">
+  <img src="https://img.shields.io/badge/Status-Finally%20Complete-brightgreen?style=for-the-badge" alt="Finally Complete">
+  <img src="https://img.shields.io/badge/CG--Lab-Complete-FF69B4?style=for-the-badge" alt="CG Lab Complete">
+</p>
+
+<br>
+
+<p align="center">
+  <strong>建模、变换、曲线、光照、光线追踪、可微渲染、物理仿真、角色蒙皮。</strong><br>
+  <strong>八个实验，八段完整的图形学学习轨迹，终于全部收束成这个仓库。</strong>
+</p>
+
+<br>
+
+> 这一学期，这个仓库从一个空目录开始，逐步记录下粒子在窗口中流动、立方体在透视投影下旋转、Bezier 曲线被控制点牵引、Phong 高光与阴影被点亮、光线在镜面和玻璃中递归传播、奶牛网格在可微渲染中被一点点优化、布料在弹簧力与数值积分中摆动，最后由 SMPL 骨架带动人体网格完成平滑蒙皮。
+
+
+### 🌟 完结撒花
+
+<div align="center">
+
+# 🎊🎊🎊 计算机图形学实验全部完成！🎊🎊🎊
+
+## 8 个实验 · 8 份 README · 一整个学期的图形学轨迹
+
+### 辛苦了辛苦了。
+
+</div>
+
+<br>
+
+### 致谢
+
+感谢敬爱的老师、助教和课程资料，为建模、渲染、动画、物理仿真与角色动画提供了完整而清晰的学习路径。
+
+感谢每一份课件、每一次调参、每一个深夜保存下来的截图，以及每一次从“怎么又错了”到“终于跑出来了”的瞬间。
+
+不感谢每一次实验中出现的报错、黑屏、路径问题、环境冲突、数值不稳定和结果不如预期。它们让每一个最终能够稳定运行的窗口、GIF、渲染图和验证结果都更有分量。
+
+最后，感谢坚持把每个实验都整理成完整代码、完整文档和完整可视化结果的自己。
+
+<p align="center">
+  <strong>愿以后回看这个仓库时，仍然记得：</strong><br>
+  <strong>图形学理解如何表示、变换、建模、渲染与驱动这个世界。</strong>
+</p>
+
+<br>
+
+<p align="center">
+  <strong>CG-Lab · 2026.06.23 · 完结撒花 ✨</strong>
+</p>
+
+<p align="right"><a href="#toc">回到目录 ↑</a></p>
+

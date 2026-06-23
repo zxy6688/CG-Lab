@@ -10,30 +10,11 @@
   <img src="https://img.shields.io/badge/Status-Completed-brightgreen?style=for-the-badge" alt="Status">
 </p>
 
-<div align="center">
-
-<table>
-  <tr>
-    <td><strong>姓名</strong></td>
-    <td>周欣源</td>
-  </tr>
-  <tr>
-    <td><strong>学号</strong></td>
-    <td>202311260012</td>
-  </tr>
-  <tr>
-    <td><strong>专业</strong></td>
-    <td>计算机科学与技术</td>
-  </tr>
-</table>
-
-</div>
+<p align="center">
+  <b>基于 SMPL 参数化人体模型，拆解并可视化从模板网格、形状校正、姿态校正到最终 Linear Blend Skinning 的完整前向过程。</b>
+</p>
 
 <br>
-
-<p align="center">
-  基于 SMPL 参数化人体模型，拆解并可视化从模板网格、形状校正、姿态校正到最终 Linear Blend Skinning 的完整前向过程。
-</p>
 
 <p align="center">
   <img src="../../assets/work8/comparison_grid.png" alt="SMPL Linear Blend Skinning Pipeline" width="980">
@@ -121,33 +102,12 @@
 
 - [七、基础任务实现](#section-7)
   - [任务 1：加载 SMPL 并输出基础信息](#section-7-1)
-    - [任务要求](#section-7-1-1)
-    - [实现方式](#section-7-1-2)
-    - [结果与分析](#section-7-1-3)
   - [任务 2：模板网格与蒙皮权重可视化](#section-7-2)
-    - [任务要求](#section-7-2-1)
-    - [实现方式](#section-7-2-2)
-    - [结果与分析](#section-7-2-3)
   - [任务 3：形状校正与关节回归](#section-7-3)
-    - [任务要求](#section-7-3-1)
-    - [实现方式](#section-7-3-2)
-    - [结果与分析](#section-7-3-3)
   - [任务 4：姿态相关校正可视化](#section-7-4)
-    - [任务要求](#section-7-4-1)
-    - [实现方式](#section-7-4-2)
-    - [结果与分析](#section-7-4-3)
   - [任务 5：手写 LBS 与最终姿态网格](#section-7-5)
-    - [任务要求](#section-7-5-1)
-    - [实现方式](#section-7-5-2)
-    - [结果与分析](#section-7-5-3)
   - [任务 6：四阶段总对比图](#section-7-6)
-    - [任务要求](#section-7-6-1)
-    - [实现方式](#section-7-6-2)
-    - [结果与分析](#section-7-6-3)
   - [任务 7：手写 LBS 与官方结果验证](#section-7-7)
-    - [任务要求](#section-7-7-1)
-    - [实现方式](#section-7-7-2)
-    - [结果与分析](#section-7-7-3)
 
 </details>
 
@@ -171,6 +131,8 @@
 - [九、实验总结](#section-9)
 
 </details>
+
+---
 
 ## 效果图目录
 
@@ -197,10 +159,11 @@
 | Task 1 运行记录 | 模型路径、顶点数、面片数、关节数、betas 维度与 `summary.txt` 保存路径 | [查看模型加载截图](#section-4-1) |
 | Task 4 至 Task 7 记录 | pose corrective、手写 LBS、四阶段对比图、官方前向验证的完整终端输出 | [查看任务执行与最终验证截图](#section-4-9) |
 
+---
 
 <a id="section-1"></a>
 
-## 一、本次实验任务与收获
+# 一、本次实验任务与收获
 
 本次实验围绕 **SMPL 参数化人体模型与 Linear Blend Skinning（LBS）** 展开，完整实现了从模板人体、个体化体型、姿态修正到最终骨骼蒙皮的七项任务。
 
@@ -244,7 +207,7 @@ v_template → v_shaped → J → v_posed → verts
 
 <a id="section-2"></a>
 
-## 二、文件结构
+# 二、文件结构
 
 ~~~text
 CG-Lab/
@@ -296,59 +259,42 @@ CG-Lab/
 └── src/
     └── work8/
         ├── __init__.py
-        │   └── Work8 Python package 标记文件
-        │
         ├── config.py
-        │   └── 项目根目录、模型路径、输出路径、关节名称等全局配置
-        │
         ├── smpl_loader.py
-        │   └── SMPL neutral 模型加载逻辑
-        │
         ├── smpl_math.py
-        │   └── Shape blend shapes、pose corrective、LBS 数学计算
-        │
         ├── visualization.py
-        │   └── 模板网格、热力图、骨架、对比图等可复用绘图函数
-        │
         ├── task1_model_info.py
-        │   └── Task 1：加载 SMPL 并输出模型基础信息
-        │
         ├── task2_template_weights.py
-        │   └── Task 2：模板网格、单关节权重和主导关节分布
-        │
         ├── task3_shape_joints.py
-        │   └── Task 3：形状校正、关节回归和 shape offset 可视化
-        │
         ├── task4_pose_correctives.py
-        │   └── Task 4：姿态相关校正与 pose offset 热力图
-        │
         ├── task5_lbs_result.py
-        │   └── Task 5：手写 Linear Blend Skinning
-        │
         ├── task6_comparison.py
-        │   └── Task 6：四阶段总对比图
-        │
         ├── task7_validation.py
-        │   └── Task 7：手写 LBS 与官方 SMPL 前向结果验证
-        │
+        ├── run_all.py
         ├── requirements.txt
-        │   └── Work8 专用旧版兼容环境依赖说明
-        │
         └── README.md
-            └── 本实验完整说明文档
 ~~~
+
+其中：
+
+- `config.py`：统一管理模型路径、输出路径、关节名称和默认可视化配置；
+- `smpl_loader.py`：加载 SMPL neutral 模型；
+- `smpl_math.py`：实现 shape blend shapes、pose corrective 和完整 LBS；
+- `visualization.py`：实现三维网格、热力图、骨架和总对比图绘制；
+- `task1` 至 `task7`：每一项任务独立封装，便于复现和调试；
+- `run_all.py`：顺序运行所有任务。
 
 <p align="right"><a href="#toc">回到目录 ↑</a></p>
 
 <a id="section-3"></a>
 
-## 三、运行方式
+# 三、运行方式
 
-本实验使用的 `SMPL_NEUTRAL.pkl` 是较早版本的模型文件，加载过程中依赖 `chumpy`。由于 `chumpy` 与新版 Python、NumPy 的兼容性较差，本实验单独创建 `.venv-work8` 环境，避免影响项目中其他实验的 Python 环境。
+本实验使用的 `SMPL_NEUTRAL.pkl` 是较早版本的模型文件，加载过程中依赖 `chumpy`。由于 `chumpy` 与新版 Python、NumPy 的兼容性有限，本实验单独创建 `.venv-work8` 环境，避免影响项目中其他实验的 Python 环境。
 
 <a id="section-3-1"></a>
 
-### 3.1 SMPL 模型文件准备
+## 3.1 SMPL 模型文件准备
 
 本实验需要 neutral SMPL 模型文件：
 
@@ -373,7 +319,7 @@ models/
 
 <a id="section-3-2"></a>
 
-### 3.2 Python 兼容环境
+## 3.2 Python 兼容环境
 
 本实验实际使用的环境如下：
 
@@ -413,7 +359,7 @@ uv pip install --python .venv-work8\Scripts\python.exe chumpy==0.70 --no-build-i
 
 <a id="section-3-3"></a>
 
-### 3.3 环境验证记录
+## 3.3 环境验证记录
 
 完成安装后，使用以下命令检查环境：
 
@@ -438,55 +384,61 @@ smplx: OK
 
 <a id="section-3-4"></a>
 
-### 3.4 分任务运行命令
+## 3.4 分任务运行命令
 
 所有命令均在项目根目录 `CG-Lab/` 下执行。
 
-#### Task 1：SMPL 模型基础信息
+### Task 1：SMPL 模型基础信息
 
 ~~~bat
 .venv-work8\Scripts\python.exe -m src.work8.task1_model_info
 ~~~
 
-#### Task 2：模板网格与蒙皮权重
+### Task 2：模板网格与蒙皮权重
 
 ~~~bat
 .venv-work8\Scripts\python.exe -m src.work8.task2_template_weights
 ~~~
 
-#### Task 3：形状校正与关节回归
+### Task 3：形状校正与关节回归
 
 ~~~bat
 .venv-work8\Scripts\python.exe -m src.work8.task3_shape_joints
 ~~~
 
-#### Task 4：姿态相关校正
+### Task 4：姿态相关校正
 
 ~~~bat
 .venv-work8\Scripts\python.exe -m src.work8.task4_pose_correctives
 ~~~
 
-#### Task 5：手写 LBS 与最终姿态网格
+### Task 5：手写 LBS 与最终姿态网格
 
 ~~~bat
 .venv-work8\Scripts\python.exe -m src.work8.task5_lbs_result
 ~~~
 
-#### Task 6：四阶段总对比图
+### Task 6：四阶段总对比图
 
 ~~~bat
 .venv-work8\Scripts\python.exe -m src.work8.task6_comparison
 ~~~
 
-#### Task 7：手写 LBS 与官方 SMPL 前向验证
+### Task 7：手写 LBS 与官方 SMPL 前向验证
 
 ~~~bat
 .venv-work8\Scripts\python.exe -m src.work8.task7_validation
 ~~~
 
+### 一键运行所有任务
+
+~~~bat
+.venv-work8\Scripts\python.exe -m src.work8.run_all
+~~~
+
 <a id="section-3-5"></a>
 
-### 3.5 输出文件说明
+## 3.5 输出文件说明
 
 运行全部任务后，程序会生成：
 
@@ -506,19 +458,19 @@ outputs/work8/
 
 其中：
 
-- `assets/work8/`：所有可视化结果；
-- `outputs/work8/summary.txt`：模型信息和误差验证结果；
+- `assets/work8/`：保存所有可视化结果；
+- `outputs/work8/summary.txt`：保存模型基础信息和误差验证结果；
 - 各个 `task*.py` 均可独立运行，方便检查任意阶段。
 
 <p align="right"><a href="#toc">回到目录 ↑</a></p>
 
 <a id="section-4"></a>
 
-## 四、可视化结果
+# 四、可视化结果
 
 <a id="section-4-1"></a>
 
-### 4.1 环境、模型加载与运行记录
+## 4.1 环境、模型加载与运行记录
 
 <table align="center">
   <tr>
@@ -554,7 +506,7 @@ outputs/work8/
 
 <a id="section-4-2"></a>
 
-### 4.2 LBS 四阶段总览
+## 4.2 LBS 四阶段总览
 
 <p align="center">
   <img src="../../assets/work8/comparison_grid.png" alt="SMPL LBS Comparison Grid" width="1000">
@@ -580,7 +532,7 @@ outputs/work8/
 
 <a id="section-4-3"></a>
 
-### 4.3 Stage A：模板网格与单关节权重
+## 4.3 Stage A：模板网格与单关节权重
 
 <p align="center">
   <img src="../../assets/work8/stage_a_template_weights.png" alt="Template Mesh and Right Shoulder Weights" width="1000">
@@ -600,7 +552,7 @@ outputs/work8/
 
 <a id="section-4-4"></a>
 
-### 4.4 Stage A 辅助图：主导关节分布
+## 4.4 Stage A 辅助图：主导关节分布
 
 <p align="center">
   <img src="../../assets/work8/all_joint_weights.png" alt="Dominant Joint Distribution" width="520">
@@ -623,7 +575,7 @@ dominant_joint(i) = argmax_k w_ik
 
 <a id="section-4-5"></a>
 
-### 4.5 Stage B：形状校正与关节回归
+## 4.5 Stage B：形状校正与关节回归
 
 <p align="center">
   <img src="../../assets/work8/stage_b_shaped_joints.png" alt="Shaped Mesh and Regressed Joints" width="520">
@@ -631,21 +583,21 @@ dominant_joint(i) = argmax_k w_ik
 
 本阶段设置非零 shape 参数，计算：
 
-$$
+```math
 v_{\text{shaped}}
 =
 v_{\text{template}}
 +
 B_S(\beta)
-$$
+```
 
 随后通过关节回归器得到：
 
-$$
+```math
 J
 =
 \mathcal{J}(v_{\text{shaped}})
-$$
+```
 
 图中：
 
@@ -657,7 +609,7 @@ $$
 
 <a id="section-4-6"></a>
 
-### 4.6 Stage B 辅助图：形状变化幅度
+## 4.6 Stage B 辅助图：形状变化幅度
 
 <p align="center">
   <img src="../../assets/work8/shape_offsets.png" alt="Shape Deformation Magnitude" width="520">
@@ -665,13 +617,13 @@ $$
 
 该图中每个顶点颜色表示：
 
-$$
+```math
 \left\|
 v_{\text{shaped}}
 -
 v_{\text{template}}
 \right\|
-$$
+```
 
 也就是 shape blend shapes 对该顶点产生的位移长度。
 
@@ -679,7 +631,7 @@ $$
 
 <a id="section-4-7"></a>
 
-### 4.7 Stage C：姿态相关校正
+## 4.7 Stage C：姿态相关校正
 
 <p align="center">
   <img src="../../assets/work8/stage_c_pose_offsets.png" alt="Pose Corrective Offset Magnitude" width="520">
@@ -687,21 +639,21 @@ $$
 
 本阶段的目标是展示姿态校正项：
 
-$$
+```math
 v_{\text{posed}}
 =
 v_{\text{shaped}}
 +
 \text{pose\_offsets}
-$$
+```
 
 颜色表示：
 
-$$
+```math
 \left\|
 \text{pose\_offsets}
 \right\|
-$$
+```
 
 图中最明显的高亮区域位于肩部、上臂和肘部附近，这与实验设置的右肩抬起、右肘弯曲姿态相对应。
 
@@ -715,7 +667,7 @@ $$
 
 <a id="section-4-8"></a>
 
-### 4.8 Stage D：最终 LBS 蒙皮结果
+## 4.8 Stage D：最终 LBS 蒙皮结果
 
 <p align="center">
   <img src="../../assets/work8/stage_d_lbs_result.png" alt="Final Linear Blend Skinning Result" width="520">
@@ -738,7 +690,7 @@ $$
 
 <a id="section-4-9"></a>
 
-### 4.9 手写 LBS 与官方前向验证
+## 4.9 手写 LBS 与官方前向验证
 
 本实验使用同一组：
 
@@ -785,11 +737,11 @@ outputs/work8/summary.txt
 
 <a id="section-5"></a>
 
-## 五、实验目标
+# 五、实验目标
 
 <a id="section-5-1"></a>
 
-### 5.1 理论理解
+## 5.1 理论理解
 
 通过本实验，理解参数化人体模型中以下对象之间的关系：
 
@@ -805,41 +757,41 @@ outputs/work8/summary.txt
 
 <a id="section-5-2"></a>
 
-### 5.2 数学与算法理解
+## 5.2 数学与算法理解
 
-掌握以下数学过程：
+掌握以下数学过程。
 
-1. Shape blend shapes：
+Shape blend shapes：
 
-$$
+```math
 v_{\text{shaped}}
 =
 v_{\text{template}}
 +
 B_S(\beta)
-$$
+```
 
-2. Joint regression：
+Joint regression：
 
-$$
+```math
 J
 =
 \mathcal{J}(v_{\text{shaped}})
-$$
+```
 
-3. Pose corrective：
+Pose corrective：
 
-$$
+```math
 v_{\text{posed}}
 =
 v_{\text{shaped}}
 +
 B_P(\theta)
-$$
+```
 
-4. Linear Blend Skinning：
+Linear Blend Skinning：
 
-$$
+```math
 v_i'
 =
 \sum_{k=1}^{24}
@@ -849,13 +801,13 @@ A_k
 v_i^{\text{posed}} \\
 1
 \end{bmatrix}
-$$
+```
 
-5. 手写实现与官方前向结果逐顶点误差验证。
+并通过逐顶点误差比较，验证手写实现与官方前向一致。
 
 <a id="section-5-3"></a>
 
-### 5.3 工程实践
+## 5.3 工程实践
 
 通过本实验完成：
 
@@ -872,11 +824,11 @@ $$
 
 <a id="section-6"></a>
 
-## 六、实验原理
+# 六、实验原理
 
 <a id="section-6-1"></a>
 
-### 6.1 SMPL 参数化人体模型
+## 6.1 SMPL 参数化人体模型
 
 SMPL 是一种统计参数化人体模型。它将人体表示为固定拓扑的三角网格，同时使用较低维参数控制人体形状和姿态。
 
@@ -891,7 +843,7 @@ SMPL 的主要特点包括：
 
 SMPL 的前向过程可概括为：
 
-$$
+```math
 M(\beta,\theta)
 =
 W
@@ -901,7 +853,7 @@ J(\beta),
 \theta,
 \mathcal{W}
 \right)
-$$
+```
 
 其中：
 
@@ -914,34 +866,34 @@ $$
 
 <a id="section-6-2"></a>
 
-### 6.2 模板网格与蒙皮权重
+## 6.2 模板网格与蒙皮权重
 
 模板网格记为：
 
-$$
+```math
 \bar{T}
 =
 v_{\text{template}}
-$$
+```
 
 它通常处于标准 T-pose。
 
 每个顶点 $i$ 都有一个长度为 24 的权重向量：
 
-$$
+```math
 \mathbf{w}_i
 =
 [w_{i1},w_{i2},\ldots,w_{i24}]
-$$
+```
 
-满足：
+并满足：
 
-$$
+```math
 \sum_{k=1}^{24}
 w_{ik}
 =
 1
-$$
+```
 
 权重描述该顶点将来受不同关节影响的比例。
 
@@ -954,18 +906,18 @@ $$
 
 <a id="section-6-3"></a>
 
-### 6.3 Shape Blend Shapes
+## 6.3 Shape Blend Shapes
 
 shape 参数 $\beta$ 控制人体体型。
 
 其基本形式为：
 
-$$
+```math
 B_S(\beta)
 =
 \sum_{n=1}^{|\beta|}
 \beta_n S_n
-$$
+```
 
 其中：
 
@@ -975,27 +927,27 @@ $$
 
 形状后网格为：
 
-$$
+```math
 v_{\text{shaped}}
 =
 v_{\text{template}}
 +
 B_S(\beta)
-$$
+```
 
 这一步主要改变人体的静态几何比例，不涉及骨骼动作。
 
 <a id="section-6-4"></a>
 
-### 6.4 关节回归器
+## 6.4 关节回归器
 
 SMPL 不直接将关节写死为固定坐标，而是通过线性回归器从形状后的顶点中计算关节位置：
 
-$$
+```math
 J(\beta)
 =
 \mathcal{J}(v_{\text{shaped}})
-$$
+```
 
 从实现角度看：
 
@@ -1016,7 +968,7 @@ J = vertices2joints(
 
 <a id="section-6-5"></a>
 
-### 6.5 Pose Corrective Blend Shapes
+## 6.5 Pose Corrective Blend Shapes
 
 单纯的骨骼旋转无法充分模拟人体皮肤与肌肉在弯曲时的局部形变。
 
@@ -1028,39 +980,39 @@ J = vertices2joints(
 
 因此，SMPL 使用姿态旋转矩阵与单位矩阵的差构造姿态特征：
 
-$$
+```math
 \text{pose\_feature}
 =
 R(\theta)
 -
 I
-$$
+```
 
 姿态特征经过 `posedirs` 映射得到：
 
-$$
+```math
 B_P(\theta)
 =
 \text{pose\_feature}
 \cdot
 \text{posedirs}
-$$
+```
 
 最终：
 
-$$
+```math
 v_{\text{posed}}
 =
 v_{\text{shaped}}
 +
 B_P(\theta)
-$$
+```
 
 这一步的本质是：在真正骨骼驱动之前，先把“这种姿态下皮肤应该额外怎样变形”加入网格。
 
 <a id="section-6-6"></a>
 
-### 6.6 Forward Kinematics 与关节变换
+## 6.6 Forward Kinematics 与关节变换
 
 骨骼是一个层级结构。
 
@@ -1072,27 +1024,27 @@ $$
 
 根关节的全局变换直接由自身姿态得到：
 
-$$
+```math
 G_0
 =
 \begin{bmatrix}
 R_0 & J_0 \\
 0 & 1
 \end{bmatrix}
-$$
+```
 
 子关节的全局变换需要沿父子关系累积：
 
-$$
+```math
 G_k
 =
-G_{\text{parent}(k)}
+G_{\operatorname{parent}(k)}
 \cdot
 \begin{bmatrix}
-R_k & J_k - J_{\text{parent}(k)} \\
+R_k & J_k - J_{\operatorname{parent}(k)} \\
 0 & 1
 \end{bmatrix}
-$$
+```
 
 在 SMPL 中，为了进行正确的蒙皮，还需要消除 bind pose 下关节原始位置带来的影响，最终得到用于 LBS 的矩阵 $A_k$。
 
@@ -1114,38 +1066,38 @@ J_transformed, A = batch_rigid_transform(
 
 <a id="section-6-7"></a>
 
-### 6.7 Linear Blend Skinning
+## 6.7 Linear Blend Skinning
 
 对于每个顶点 $i$，先根据权重把多个关节变换矩阵混合为顶点级变换：
 
-$$
+```math
 T_i
 =
 \sum_{k=1}^{24}
 w_{ik} A_k
-$$
+```
 
 再应用到顶点的齐次坐标：
 
-$$
+```math
 \tilde{v}_i
 =
 \begin{bmatrix}
 v_i^{\text{posed}} \\
 1
 \end{bmatrix}
-$$
+```
 
 最终顶点为：
 
-$$
+```math
 v_i'
 =
 \left(
 T_i
 \tilde{v}_i
 \right)_{1:3}
-$$
+```
 
 在代码中，对应过程为：
 
@@ -1180,13 +1132,13 @@ verts = v_homo[:, :, :3, 0]
 
 <a id="section-6-8"></a>
 
-### 6.8 手写实现与官方前向验证
+## 6.8 手写实现与官方前向验证
 
 实验中并没有只根据“最终人体看起来正常”判断实现正确，而是将手写结果与官方前向逐元素比较。
 
 对每个顶点坐标计算：
 
-$$
+```math
 D
 =
 \left|
@@ -1194,23 +1146,23 @@ D
 -
 \text{official\_verts}
 \right|
-$$
+```
 
 平均绝对误差为：
 
-$$
+```math
 \text{MAE}
 =
 \operatorname{mean}(D)
-$$
+```
 
 最大绝对误差为：
 
-$$
+```math
 \text{Max Error}
 =
 \operatorname{max}(D)
-$$
+```
 
 本实验最终得到：
 
@@ -1225,24 +1177,20 @@ max_absolute_error:  0.0000000000e+00
 
 <a id="section-7"></a>
 
-## 七、基础任务实现
+# 七、基础任务实现
 
 <a id="section-7-1"></a>
 
-### 任务 1：加载 SMPL 并输出基础信息
+## 任务 1：加载 SMPL 并输出基础信息
 
-<a id="section-7-1-1"></a>
-
-#### 任务要求
+### 任务要求
 
 1. 使用 `smplx.create(...)` 加载 SMPL；
 2. 指定 `model_type='smpl'`；
 3. 指定 `gender='neutral'`；
 4. 输出顶点数、面片数、关节数、betas 维度。
 
-<a id="section-7-1-2"></a>
-
-#### 实现方式
+### 实现方式
 
 模型加载逻辑封装于：
 
@@ -1272,9 +1220,7 @@ num_joints = model.J_regressor.shape[0]
 num_betas = model.betas.shape[1]
 ~~~
 
-<a id="section-7-1-3"></a>
-
-#### 结果与分析
+### 结果与分析
 
 ~~~text
 num_vertices: 6890
@@ -1289,20 +1235,16 @@ num_betas: 10
 
 <a id="section-7-2"></a>
 
-### 任务 2：模板网格与蒙皮权重可视化
+## 任务 2：模板网格与蒙皮权重可视化
 
-<a id="section-7-2-1"></a>
-
-#### 任务要求
+### 任务要求
 
 1. 显示模板网格 `v_template`；
 2. 从 `lbs_weights` 中选择一个关节；
 3. 将该关节对所有顶点的影响权重可视化为颜色；
 4. 可选绘制全关节主导权重分布图。
 
-<a id="section-7-2-2"></a>
-
-#### 实现方式
+### 实现方式
 
 本实验选择：
 
@@ -1330,9 +1272,7 @@ dominant_joint = np.argmax(lbs_weights, axis=1)
 dominant_weight = np.max(lbs_weights, axis=1)
 ~~~
 
-<a id="section-7-2-3"></a>
-
-#### 结果与分析
+### 结果与分析
 
 输出文件：
 
@@ -1352,21 +1292,17 @@ assets/work8/all_joint_weights.png
 
 <a id="section-7-3"></a>
 
-### 任务 3：形状校正与关节回归
+## 任务 3：形状校正与关节回归
 
-<a id="section-7-3-1"></a>
-
-#### 任务要求
+### 任务要求
 
 1. 设置非零 shape 参数；
 2. 计算 `v_shaped`；
 3. 从 `v_shaped` 回归关节 `J`；
 4. 同时展示形状变化后的网格和关节位置；
-5. 可选展示 shape deformation magnitude。
+5. 展示 shape deformation magnitude。
 
-<a id="section-7-3-2"></a>
-
-#### 实现方式
+### 实现方式
 
 本实验使用：
 
@@ -1403,9 +1339,7 @@ shape_displacement = np.linalg.norm(
 )
 ~~~
 
-<a id="section-7-3-3"></a>
-
-#### 结果与分析
+### 结果与分析
 
 输出文件：
 
@@ -1425,11 +1359,9 @@ assets/work8/shape_offsets.png
 
 <a id="section-7-4"></a>
 
-### 任务 4：姿态相关校正可视化
+## 任务 4：姿态相关校正可视化
 
-<a id="section-7-4-1"></a>
-
-#### 任务要求
+### 任务要求
 
 1. 设置非零姿态；
 2. 将轴角姿态转换为旋转矩阵；
@@ -1438,9 +1370,7 @@ assets/work8/shape_offsets.png
 5. 得到 `v_posed`；
 6. 将 `pose_offsets` 大小可视化为颜色。
 
-<a id="section-7-4-2"></a>
-
-#### 实现方式
+### 实现方式
 
 本实验设置：
 
@@ -1489,9 +1419,7 @@ pose_offsets = torch.matmul(
 v_posed = v_shaped + pose_offsets
 ~~~
 
-<a id="section-7-4-3"></a>
-
-#### 结果与分析
+### 结果与分析
 
 输出文件：
 
@@ -1514,20 +1442,16 @@ max=0.012468
 
 <a id="section-7-5"></a>
 
-### 任务 5：手写 LBS 与最终姿态网格
+## 任务 5：手写 LBS 与最终姿态网格
 
-<a id="section-7-5-1"></a>
-
-#### 任务要求
+### 任务要求
 
 1. 根据运动学树计算关节全局刚体变换；
 2. 使用 `lbs_weights` 对关节变换进行加权；
 3. 计算最终顶点 `verts`；
 4. 可视化最终人体与姿态下关节。
 
-<a id="section-7-5-2"></a>
-
-#### 实现方式
+### 实现方式
 
 首先计算关节变换：
 
@@ -1581,9 +1505,7 @@ v_homo = torch.matmul(
 verts = v_homo[:, :, :3, 0]
 ~~~
 
-<a id="section-7-5-3"></a>
-
-#### 结果与分析
+### 结果与分析
 
 输出文件：
 
@@ -1611,11 +1533,9 @@ max=1.071715
 
 <a id="section-7-6"></a>
 
-### 任务 6：四阶段总对比图
+## 任务 6：四阶段总对比图
 
-<a id="section-7-6-1"></a>
-
-#### 任务要求
+### 任务要求
 
 将以下四个阶段排成一张图：
 
@@ -1626,9 +1546,7 @@ max=1.071715
 (d) final skinned mesh
 ~~~
 
-<a id="section-7-6-2"></a>
-
-#### 实现方式
+### 实现方式
 
 程序读取四张阶段图：
 
@@ -1649,9 +1567,7 @@ plt.subplots(2, 2)
 
 将四个阶段组合成总览图。
 
-<a id="section-7-6-3"></a>
-
-#### 结果与分析
+### 结果与分析
 
 输出文件：
 
@@ -1674,11 +1590,9 @@ assets/work8/comparison_grid.png
 
 <a id="section-7-7"></a>
 
-### 任务 7：手写 LBS 与官方结果一致性验证
+## 任务 7：手写 LBS 与官方结果一致性验证
 
-<a id="section-7-7-1"></a>
-
-#### 任务要求
+### 任务要求
 
 1. 使用相同的 `betas`、`global_orient`、`body_pose`；
 2. 调用官方模型前向得到 `output.vertices`；
@@ -1686,9 +1600,7 @@ assets/work8/comparison_grid.png
 4. 计算平均绝对误差和最大绝对误差；
 5. 将结果保存到 `summary.txt`。
 
-<a id="section-7-7-2"></a>
-
-#### 实现方式
+### 实现方式
 
 官方前向：
 
@@ -1714,9 +1626,7 @@ mean_abs_error = absolute_difference.mean().item()
 max_abs_error = absolute_difference.max().item()
 ~~~
 
-<a id="section-7-7-3"></a>
-
-#### 结果与分析
+### 结果与分析
 
 最终输出：
 
@@ -1745,11 +1655,11 @@ outputs/work8/summary.txt
 
 <a id="section-8"></a>
 
-## 八、思考题与分析
+# 八、思考题与分析
 
 <a id="section-8-1"></a>
 
-### 8.1 为什么一个顶点受多个关节影响？
+## 8.1 为什么一个顶点受多个关节影响？
 
 人体皮肤不是刚体，关节附近的皮肤需要在多个骨骼之间连续过渡。
 
@@ -1765,15 +1675,15 @@ outputs/work8/summary.txt
 
 <a id="section-8-2"></a>
 
-### 8.2 单关节权重过高会怎样？
+## 8.2 单关节权重过高会怎样？
 
 若一个顶点的权重几乎完全分配给单个关节：
 
-$$
+```math
 w_{ik}
 \approx
 1
-$$
+```
 
 该顶点会近似刚性地跟随该关节运动。
 
@@ -1783,7 +1693,7 @@ $$
 
 <a id="section-8-3"></a>
 
-### 8.3 权重过于平均会怎样？
+## 8.3 权重过于平均会怎样？
 
 若一个顶点平均受到很多关节影响，它会同时被多个骨骼拉扯。
 
@@ -1800,7 +1710,7 @@ $$
 
 <a id="section-8-4"></a>
 
-### 8.4 为什么关节从形状后网格回归？
+## 8.4 为什么关节从形状后网格回归？
 
 不同人体的比例不同：
 
@@ -1814,11 +1724,11 @@ $$
 
 SMPL 使用：
 
-$$
+```math
 J(\beta)
 =
 \mathcal{J}(v_{\text{shaped}})
-$$
+```
 
 从形状后网格中回归关节，保证骨架能够适配当前的人体比例。
 
@@ -1826,7 +1736,7 @@ $$
 
 <a id="section-8-5"></a>
 
-### 8.5 为什么 LBS 前需要 pose corrective？
+## 8.5 为什么 LBS 前需要 pose corrective？
 
 纯 LBS 只进行骨骼刚体变换。
 
@@ -1840,13 +1750,13 @@ $$
 
 pose corrective 通过：
 
-$$
+```math
 v_{\text{posed}}
 =
 v_{\text{shaped}}
 +
 B_P(\theta)
-$$
+```
 
 在进入 LBS 前对局部顶点进行补偿，从而改善最终人体姿态的自然程度。
 
@@ -1854,7 +1764,7 @@ $$
 
 <a id="section-8-6"></a>
 
-### 8.6 J 与 J_transformed 的区别
+## 8.6 J 与 J_transformed 的区别
 
 两者的区别如下：
 
@@ -1874,7 +1784,7 @@ J_transformed   = 做完动作后的最终骨架
 
 <a id="section-8-7"></a>
 
-### 8.7 为什么最终顶点是加权和？
+## 8.7 为什么最终顶点是加权和？
 
 如果最终顶点只选择权重最大的一个关节：
 
@@ -1886,14 +1796,14 @@ vertex i → only follows one joint
 
 LBS 使用：
 
-$$
+```math
 v_i'
 =
 \sum_k
 w_{ik}
 A_k
 \tilde{v}_i
-$$
+```
 
 让顶点受到多个相关关节变换的加权影响。
 
@@ -1908,7 +1818,7 @@ $$
 
 <a id="section-9"></a>
 
-## 九、实验总结
+# 九、实验总结
 
 本实验完整实现了 SMPL 模型中的 LBS 蒙皮流程，并且没有将官方模型前向过程视为黑盒，而是逐步拆解、计算、可视化和验证了每一个关键中间量。
 
